@@ -1,6 +1,11 @@
+const { DATABASE_URL } = require('../config')
+
 const RecipesService = {
     getAllRecipes(knex) {
-        return knex.select('*').from('recipenest_recipes')
+        console.log(DATABASE_URL)
+        return knex
+            .select('*')
+            .from('recipenest_recipes')
     },
 
 }

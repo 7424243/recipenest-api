@@ -5,6 +5,7 @@ const cors = require('cors')
 const helmet = require('helmet')
 const {NODE_ENV} = require('./config')
 const recipesRouter = require('./recipes/recipes-router')
+const RecipesService = require('./recipes/recipes-service')
 
 const app = express()
 
@@ -17,7 +18,14 @@ app.use(cors())
 app.get('/', (req, res) => {
     res.send('Hello, world!')
 })
-
+// app.get('/api/recipes/', (req, res, next) => {
+//     const knexInstance = req.app.get('db')
+//     RecipesService.getAllRecipes(knexInstance)
+//         .then(recipes => {
+//             res.json(recipes)
+//         })
+//         .catch(next)
+// })
 app.use('/api/recipes', recipesRouter)
 
 app.use(function errorHandler(error, req, res, next) {
