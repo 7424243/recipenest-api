@@ -18,14 +18,7 @@ app.use(cors())
 app.get('/', (req, res) => {
     res.send('Hello, world!')
 })
-// app.get('/api/recipes/', (req, res, next) => {
-//     const knexInstance = req.app.get('db')
-//     RecipesService.getAllRecipes(knexInstance)
-//         .then(recipes => {
-//             res.json(recipes)
-//         })
-//         .catch(next)
-// })
+
 app.use('/api/recipes', recipesRouter)
 
 app.use(function errorHandler(error, req, res, next) {
