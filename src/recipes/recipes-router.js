@@ -43,7 +43,7 @@ recipesRouter
         newRecipe.notes = notes
         newRecipe.img_url = img_url
 
-        knexInstance = req.app.get('db')
+        const knexInstance = req.app.get('db')
         RecipesService.insertRecipe(knexInstance, newRecipe)
             .then(recipe => {
                 res 

@@ -4,7 +4,7 @@ const supertest = require('supertest')
 const app = require('../src/app')
 const {makeUsersArray, makeMaliciousUser} = require('./users.fixtures')
 
-describe('Users Endpoints', () => {
+describe.only('Users Endpoints', () => {
 
     //create a connection to the test db
     let db
@@ -141,5 +141,196 @@ describe('Users Endpoints', () => {
 
     describe('POST /api/users/', () => {
         
+        //testing data
+        const testUsers = makeUsersArray()
+
+        //insert testing data
+        beforeEach('insert users', () => {
+            return db
+                .into('recipenest_users')
+                .insert(testUsers)
+        })
+        
+
+        //creates a new user
+        it('creates a user and responds 201 and the new user', () => {
+            
+            const newUser = {
+                full_name: 'Test fullname',
+                user_name: 'Test username',
+                password: 'Testing123!', 
+                nickname: 'test'
+            }
+            return supertest(app)
+                .post('/api/users/')
+                .send(newUser)
+                .expect(201)
+                .expect(res => {
+                    expect(res.body.full_name).to.eql(newUser.full_name)
+                    expect(res.body.user_name).to.eql(newUser.user_name)
+                    expect(res.body.password).to.eql(newUser.password)
+                    expect(res.body.nickname).to.eql(newUser.nickname)
+                    expect(res.body).to.have.property('id')
+                    expect(res.headers.location).to.eql(`/api/users/${res.body.id}`)
+                    const expected = new Date().toLocaleString()
+                    const actual = new Date(res.body.date_created).toLocaleString()
+                    expect(actual).to.eql(expected)
+                })
+                .then(postRes => {
+                    supertest(app)
+                        .get(`/api/users/${postRes.body.id}`)
+                        .expect(postRes.body)
+                })
+        })
+
+        //validation test for full_name requirement
+        it(`responds with 400 and an error message when the 'full_name' is missing`, () => {
+            const newUserNoFullName = {
+                user_name: 'Test username',
+                password: 'Testing123!', 
+                nickname: 'test'
+            }
+            return supertest(app)
+                .post('/api/users/')
+                .send(newUserNoFullName)
+                .expect(400, {
+                    error: {message: `Missing 'full_name' in request body`}
+                })
+        })
+
+        //validation test for user_name requirement 
+        it(`responds with 400 and an error message when the 'user_name' is missing`, () => {
+            const newUserNoUserName = {
+                full_name: 'Test fullname',
+                password: 'Testing123!', 
+                nickname: 'test'
+            }
+            return supertest(app)
+                .post('/api/users/')
+                .send(newUserNoUserName)
+                .expect(400, {
+                    error: {message: `Missing 'user_name' in request body`}
+                })
+        })
+
+        //validation test for password requirement
+        it(`responds with 400 and an error message when the 'password' is missing`, () => {
+            const newUserNoPassword = {
+                full_name: 'Test fullname',
+                user_name: 'Test username',
+                nickname: 'test'
+            }
+            return supertest(app)
+                .post('/api/users/')
+                .send(newUserNoPassword)
+                .expect(400, {
+                    error: {message: `Missing 'password' in request body`}
+                })
+        })
+
+        //validation tests for password 
+        it(`responds with 400 'Password must be longer than 8 characters'`, () => {
+            const newUserShortPassword = {
+                full_name: 'Test fullname',
+                user_name: 'Test username',
+                password: '1234567', 
+                nickname: 'test'
+            }
+            return supertest(app)
+                .post('/api/users/')
+                .send(newUserShortPassword)
+                .expect(400, {
+                    error: {message: `Password must be longer than 8 characters`}
+                })
+        })
+        it(`responds with 400 'Password must be shorter than 72 characters'`, () => {
+            const newUserLongPassword = {
+                full_name: 'Test fullname',
+                user_name: 'Test username',
+                password: '*'.repeat(73), 
+                nickname: 'test'
+            }
+            return supertest(app)
+                .post('/api/users/')
+                .send(newUserLongPassword)
+                .expect(400, {
+                    error: {message: `Password must be less than 72 characters`}
+                })
+        })
+        it(`responds with 400 when password starts with spaces`, () => {
+            const newUserPasswordStartsSpaces = {
+                full_name: 'Test fullname',
+                user_name: 'Test username',
+                password: ' Testing123!', 
+                nickname: 'test'
+            }
+            return supertest(app)
+                .post('/api/users/')
+                .send(newUserPasswordStartsSpaces)
+                .expect(400, {
+                    error: {message: `Password must not start or end with empty spaces`}
+                })
+        })
+        it(`responds with 400 when password ends with spaces`, () => {
+            const newUserPasswordEndsSpaces = {
+                full_name: 'Test fullname',
+                user_name: 'Test username',
+                password: 'Testing123! ', 
+                nickname: 'test'
+            }
+            return supertest(app)
+                .post('/api/users/')
+                .send(newUserPasswordEndsSpaces)
+                .expect(400, {
+                    error: {message: `Password must not start or end with empty spaces`}
+                })
+        })
+        it(`respond with 400 when password isn't complex enough`, () => {
+            const newUserPasswordNotComplex = {
+                full_name: 'Test fullname',
+                user_name: 'Test username',
+                password: '11AAaabb', 
+                nickname: 'test'
+            }
+            return supertest(app)
+                .post('/api/users/')
+                .send(newUserPasswordNotComplex)
+                .expect(400, {
+                    error: {message: `Password must contain 1 upper case, lower case, number and special character`}
+                })
+        })
+
+        //validation test for inique user_name
+        it(`responds with 400 'User name already taken' when user_name already exists`, () => {
+            
+            const newDuplicateUserName = {
+                full_name: 'Test fullname',
+                user_name: testUsers[0].user_name,
+                password: 'Testing123!', 
+                nickname: 'test'
+            }
+            return supertest(app)
+                .post('/api/users/')
+                .send(newDuplicateUserName)
+                .expect(400, {
+                    error: {message: 'Username already taken'}
+                })
+        })
+
+        //xss attack content
+        // it('removes XSS attack content from response', () => {
+
+        //     //testing data
+        //     const {maliciousUser, expectedUser} = makeMaliciousUser()
+
+        //     return supertest(app)
+        //         .post('/api/users/')
+        //         .send(maliciousUser)
+        //         .expect(201)
+        //         .expect(res => {
+        //             expect(res.body.full_name).to.eql(expectedUser.full_name)
+        //             expect(res.body.password).to.eql(expectedUser.password)
+        //         })
+        // })
     })
 })
