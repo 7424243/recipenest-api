@@ -96,7 +96,7 @@ describe('Recipes Endpoints', function() {
         })
     })
     
-    describe(`GET /api/recipes/:id`, () => {
+    describe(`GET /api/recipes/:recipe_id`, () => {
         //test for when the db is empty
         context('Given no recipes', () => {
             it('responds with 404', () => {
@@ -126,9 +126,9 @@ describe('Recipes Endpoints', function() {
                     })
             })
 
-            it('responds with 200 and the specified recipe', () => {
+            it('responds with 200 and the recipe', () => {
                 const recipeId = 1
-                const expectedRecipe = testRecipes[recipeId -1]
+                const expectedRecipe = testRecipes[recipeId - 1]
                 return supertest(app)
                     .get(`/api/recipes/${recipeId}`)
                     .expect(200, expectedRecipe)
@@ -165,16 +165,6 @@ describe('Recipes Endpoints', function() {
     })
 
     describe('POST /api/recipes/', () => {
-        // //make test data
-        // const testUsers = makeUsersArray()
-
-        // //insert the test data
-        // beforeEach('insert users', () => {
-        //     return db
-        //         .into('recipenest_users')
-        //         .insert(testUsers)
-
-        // })
 
         //creating a new recipe and a 201 response
         it('creates a recipe and responds with 201 and the new recipe', () => {
@@ -186,7 +176,7 @@ describe('Recipes Endpoints', function() {
                 description: 'test description',
                 notes: 'test notes...',
                 img_url: 'https://ww.img.com"',
-                user_id: 5
+                user_id: 1
             }
             return db
                 .into('recipenest_users')

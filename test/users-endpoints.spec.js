@@ -4,7 +4,7 @@ const supertest = require('supertest')
 const app = require('../src/app')
 const {makeUsersArray, makeMaliciousUser} = require('./users.fixtures')
 
-describe.only('Users Endpoints', () => {
+describe('Users Endpoints', () => {
 
     //create a connection to the test db
     let db
@@ -78,7 +78,68 @@ describe.only('Users Endpoints', () => {
                     })
             })
         })
+    })
 
+    describe('GET /api/users/:user_id', () => {
+        
+        //no data in the db
+        context('Given no users', () => {
+            it('responds with 404', () => {
+                const userId = 123456
+                return supertest(app)
+                    .get(`/api/users/${userId}`)
+                    .expect(404, {error: {message: `User doesn't exist`}})
+            })
+        })
 
+        //data in the db
+        context('Given there are users in the database', () => {
+
+            //testing data
+            const testUsers = makeUsersArray()
+
+            //insert test data
+            beforeEach('insert users', () => {
+                return db
+                    .into('recipenest_users')
+                    .insert(testUsers)
+            })
+
+            it('responds with 200 and the user', () => {
+                const userId = 1
+                const expectedUser = testUsers[userId - 1]
+                return supertest(app)
+                    .get(`/api/users/${userId}`)
+                    .expect(200, expectedUser)
+            })
+        })
+
+        //XSS attack
+        context('Given an XSS attack user', () => {
+
+            //testing data
+            const {maliciousUser, expectedUser} = makeMaliciousUser()
+
+            //insert data
+            beforeEach('insert malicious user', () => {
+                return db
+                    .into('recipenest_users')
+                    .insert(maliciousUser)
+            })
+
+            it('removes the XSS attack content', () => {
+                return supertest(app)
+                    .get(`/api/users/${maliciousUser.id}`)
+                    .expect(200)
+                    .expect(res => {
+                        expect(res.body.full_name).to.eql(expectedUser.full_name)
+                        expect(res.body.password).to.eql(expectedUser.password)
+                    })
+            })
+        })
+    })
+
+    describe('POST /api/users/', () => {
+        
     })
 })

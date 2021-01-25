@@ -8,7 +8,7 @@ function makeRecipesArray() {
             notes: 'Earum molestiae accusamus veniam consectetur tempora.',
             img_url: 'https://testimgurl1',
             date_created: '2019-01-03T00:00:00.000Z',
-            user_id: 5,
+            user_id: 1,
         },
         {
             id: 2,
@@ -18,7 +18,7 @@ function makeRecipesArray() {
             notes: 'Possimus, voluptate?',
             img_url: 'https://testimgurl2.com',
             date_created: '2018-08-15T23:00:00.000Z',
-            user_id: 6,
+            user_id: 2,
         },
         {
             id: 3,
@@ -28,7 +28,7 @@ function makeRecipesArray() {
             notes: 'Adipisci, pariatur.',
             img_url: 'https://testurl3.com',
             date_created: '2018-03-01T00:00:00.000Z',
-            user_id: 5,
+            user_id: 1,
         },
     ]
 }
@@ -42,7 +42,7 @@ function makeMaliciousRecipe() {
         notes: 'n/a',
         img_url: 'https://imgurl.com',
         date_created: new Date().toISOString(),
-        user_id: 5
+        user_id: 1
     }
     const expectedRecipe = {
         ...maliciousRecipe,
