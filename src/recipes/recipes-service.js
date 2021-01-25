@@ -7,6 +7,13 @@ const RecipesService = {
             .select('*')
             .from('recipenest_recipes')
     },
+    getById(knex, id) {
+        return knex
+            .select('*')
+            .from('recipenest_recipes')
+            .where('id', id)
+            .first()
+    },
 
 }
 

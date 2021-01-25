@@ -93,10 +93,76 @@ describe('Recipes Endpoints', function() {
                         expect(res.body[0].description).to.eql(expectedRecipe.description)
                     })
             })
-            
         })
     })
     
+    describe(`GET /api/recipes/:id`, () => {
+        //test for when the db is empty
+        context('Given no recipes', () => {
+            it('responds with 404', () => {
+                const recipeId= 123456
+                return supertest(app)
+                    .get(`/api/recipes/${recipeId}`)
+                    .expect(404, {error: {message: `Recipe doesn't exist`}})
+            })
+        })
+
+        //test for when there are recipes in the db
+        context(`Given there are recipes in the database`, () => {
+            
+            //make test data
+            const testUsers = makeUsersArray()
+            const testRecipes = makeRecipesArray()
+
+            //insert the test data
+            beforeEach('insert recipes', () => {
+                return db
+                    .into('recipenest_users')
+                    .insert(testUsers)
+                    .then(() => {
+                        return db   
+                            .into('recipenest_recipes')
+                            .insert(testRecipes)
+                    })
+            })
+
+            it('responds with 200 and the specified recipe', () => {
+                const recipeId = 1
+                const expectedRecipe = testRecipes[recipeId -1]
+                return supertest(app)
+                    .get(`/api/recipes/${recipeId}`)
+                    .expect(200, expectedRecipe)
+            })
+        })
+
+        //test for xxs attacks
+        context('Given an XXS attack recipe', () => {
+            //test data
+            const testUsers = makeUsersArray()
+            const {maliciousRecipe, expectedRecipe} = makeMaliciousRecipe()
+
+            //insert data
+            beforeEach('insert malicious recipe', () => {
+                return db
+                    .into('recipenest_users')
+                    .insert(testUsers)
+                    .then(() => {
+                        return db
+                            .into('recipenest_recipes')
+                            .insert(maliciousRecipe)
+                    })
+            }) 
+            it('removes XXS attack content', () => {
+                return supertest(app)
+                    .get(`/api/recipes/${maliciousRecipe.id}`)
+                    .expect(200)
+                    .expect(res => {
+                        expect(res.body.recipe_name).to.eql('Naughty naughty very naughty &lt;script&gt;alert(\"xss\");&lt;/script&gt;')
+                        expect(res.body.description).to.eql(expectedRecipe.description)
+                    })
+            })
+        })
+    })
 })
 
 

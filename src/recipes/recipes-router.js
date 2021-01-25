@@ -28,5 +28,25 @@ recipesRouter
             .catch(next)
     })
 
+recipesRouter
+    .route(`/:recipe_id`)
+    .all((req, res, next) => {
+        const knexInstance = req.app.get('db')
+        RecipesService.getById(knexInstance, req.params.recipe_id)
+            .then(recipe => {
+                if(!recipe) {
+                    return res.status(404).json({
+                        error: {message: `Recipe doesn't exist`}
+                    })
+                }
+                res.recipe = recipe
+                next()
+            })
+            .catch(next)
+    })
+    .get((req, res, next) => {
+        res.json(serializeRecipe(res.recipe))
+    })
+
 
 module.exports = recipesRouter
