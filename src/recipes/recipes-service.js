@@ -14,6 +14,15 @@ const RecipesService = {
             .where('id', id)
             .first()
     },
+    insertRecipe(knex, newRecipe) {
+        return knex
+            .insert(newRecipe)
+            .into('recipenest_recipes')
+            .returning('*')
+            .then(rows => {
+                return rows[0]
+            })
+    }
 
 }
 

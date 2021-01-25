@@ -27,6 +27,32 @@ recipesRouter
             })
             .catch(next)
     })
+    .post(jsonParser, (req, res, next) => {
+        const {recipe_name, url, description, notes, img_url, user_id} = req.body
+        const newRecipe = {recipe_name, url, user_id}
+        
+        //required fields
+        for (const [key, value] of Object.entries(newRecipe))
+            if(value == null)
+                return res.status(400).json({
+                    error: {message: `Missing '${key}' in request body`}
+                })
+        
+        //optional fields
+        newRecipe.description = description
+        newRecipe.notes = notes
+        newRecipe.img_url = img_url
+
+        knexInstance = req.app.get('db')
+        RecipesService.insertRecipe(knexInstance, newRecipe)
+            .then(recipe => {
+                res 
+                    .status(201)
+                    .location(path.posix.join(req.originalUrl, `/${recipe.id}`))
+                    .json(serializeRecipe(recipe))
+            })
+            .catch(next)
+    })
 
 recipesRouter
     .route(`/:recipe_id`)

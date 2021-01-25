@@ -157,10 +157,122 @@ describe('Recipes Endpoints', function() {
                     .get(`/api/recipes/${maliciousRecipe.id}`)
                     .expect(200)
                     .expect(res => {
-                        expect(res.body.recipe_name).to.eql('Naughty naughty very naughty &lt;script&gt;alert(\"xss\");&lt;/script&gt;')
+                        expect(res.body.recipe_name).to.eql(expectedRecipe.recipe_name)
                         expect(res.body.description).to.eql(expectedRecipe.description)
                     })
             })
+        })
+    })
+
+    describe('POST /api/recipes/', () => {
+        //creating a new recipe and a 201 response
+        it('creates a recipe and responds with 201 and the new recipe', () => {
+            const testUsers = makeUsersArray()
+            this.retries(3)
+            const newRecipe = {
+                recipe_name: 'Test recipe',
+                url: 'https://www.testing123.com',
+                description: 'test description',
+                notes: 'test notes...',
+                img_url: 'https://ww.img.com"',
+                user_id: 5
+            }
+            return db
+                .into('recipenest_users')
+                .insert(testUsers)
+                .then(() => {
+                    return supertest(app)
+                        .post('/api/recipes')
+                        .send(newRecipe)
+                        .expect(201)
+                        .expect(res => {
+                        expect(res.body.recipe_name).to.eql(newRecipe.recipe_name)
+                        expect(res.body.url).to.eql(newRecipe.url)
+                        expect(res.body.description).to.eql(newRecipe.description)
+                        expect(res.body.notes).to.eql(newRecipe.notes)
+                        expect(res.body.img_url).to.eql(newRecipe.img_url)
+                        expect(res.body.user_id).to.eql(newRecipe.user_id)
+                        expect(res.body).to.have.property('id')
+                        expect(res.headers.location).to.eql(`/api/recipes/${res.body.id}`)
+                        const expected = new Date().toLocaleString()
+                        const actual = new Date(res.body.date_created).toLocaleString()
+                        expect(actual).to.eql(expected)
+                        })
+                        .then(postRes => {
+                            supertest(app)
+                                .get(`/api/recipes/${postRes.body.id}`)
+                                .expect(postRes.body)
+                        })
+                    })
+                
+        })
+
+        //validation test for recipe_name requirement
+        it(`responds with 400 and an error message when the 'recipe_name' is missing`, () => {
+            return supertest(app)
+                .post('/api/recipes/')
+                .send({
+                    url: 'https://www.testing123.com',
+                    description: 'test description',
+                    notes: 'test notes...',
+                    img_url: 'https://ww.img.com',
+                    user_id: 5
+                })
+                .expect(400, {
+                    error: {message: `Missing 'recipe_name' in request body`}
+                })
+        })
+
+        //validation test for url requirement
+        it(`responds with 400 and an error message when the 'url' is missing`, () => {
+            return supertest(app)
+                .post('/api/recipes/')
+                .send({
+                    recipe_name: 'test recipe',
+                    description: 'test description',
+                    notes: 'test notes...',
+                    img_url: 'https://ww.img.com',
+                    user_id: 5
+                })
+                .expect(400, {
+                    error: {message: `Missing 'url' in request body`}
+                })
+        })
+
+        //validation test for user_id requirement
+        it(`responds with 400 and an error message when the 'user_id' is missing`, () => {
+            return supertest(app)
+                .post('/api/recipes/')
+                .send({
+                    recipe_name: 'test recipe',
+                    url: 'https://www.testing123.com',
+                    description: 'test description',
+                    notes: 'test notes...',
+                    img_url: 'https://ww.img.com'
+                })
+                .expect(400, {
+                    error: {message: `Missing 'user_id' in request body`}
+                })
+        })
+
+        //xss attack content
+        it('removes XSS attack content from response', () => {
+            const testUsers = makeUsersArray()
+            const {maliciousRecipe, expectedRecipe} = makeMaliciousRecipe()
+            return db
+                .into('recipenest_users')
+                .insert(testUsers)
+                .then(() => {
+                    return supertest(app) 
+                        .post('/api/recipes/')
+                        .send(maliciousRecipe)
+                        .expect(201)
+                        .expect(res => {
+                            expect(res.body.recipe_name).to.eql(expectedRecipe.recipe_name)
+                            expect(res.body.description).to.eql(expectedRecipe.description)
+                        })
+                })
+
         })
     })
 })
