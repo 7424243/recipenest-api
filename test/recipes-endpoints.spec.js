@@ -165,6 +165,17 @@ describe('Recipes Endpoints', function() {
     })
 
     describe('POST /api/recipes/', () => {
+        // //make test data
+        // const testUsers = makeUsersArray()
+
+        // //insert the test data
+        // beforeEach('insert users', () => {
+        //     return db
+        //         .into('recipenest_users')
+        //         .insert(testUsers)
+
+        // })
+
         //creating a new recipe and a 201 response
         it('creates a recipe and responds with 201 and the new recipe', () => {
             const testUsers = makeUsersArray()
@@ -272,7 +283,52 @@ describe('Recipes Endpoints', function() {
                             expect(res.body.description).to.eql(expectedRecipe.description)
                         })
                 })
+        })
+    })
 
+    describe('DELETE /api/recipes/:recipe_id', () => {
+
+        //no recipes in db
+        context('Given no recipes', () => {
+            it('responds with 404', () => {
+                const recipeId = 123456
+                return supertest(app)
+                    .delete(`/api/recipes/${recipeId}`)
+                    .expect(404, {error: {message: `Recipe doesn't exist`}})
+            })
+        })
+
+        //recipes in db
+        context('Given there are recipes in the database', () => {
+
+            //testing data
+            const testUsers = makeUsersArray()
+            const testRecipes = makeRecipesArray()
+            
+            //insert testing data
+            beforeEach('insert recipes', () => {
+                return db
+                    .into('recipenest_users')
+                    .insert(testUsers)
+                    .then(() => {
+                        return db
+                            .into('recipenest_recipes')
+                            .insert(testRecipes)
+                    })
+            })
+
+            it('responds with 204 and removes the recipe', () => {
+                const idToRemove = 2
+                const expectedRecipes = testRecipes.filter(recipe => recipe.id !== idToRemove)
+                return supertest(app)
+                    .delete(`/api/recipes/${idToRemove}`)
+                    .expect(204)
+                    .then(res => 
+                        supertest(app)
+                            .get('/api/recipes/')
+                            .expect(expectedRecipes)
+                    )
+            })
         })
     })
 })

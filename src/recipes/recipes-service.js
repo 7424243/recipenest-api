@@ -1,8 +1,5 @@
-const { DATABASE_URL } = require('../config')
-
 const RecipesService = {
     getAllRecipes(knex) {
-        console.log(DATABASE_URL)
         return knex
             .select('*')
             .from('recipenest_recipes')
@@ -22,6 +19,16 @@ const RecipesService = {
             .then(rows => {
                 return rows[0]
             })
+    },
+    deleteRecipe(knex, id) {
+        return knex('recipenest_recipes')
+            .where({id})
+            .delete()
+    },
+    updateRecipe(knex, id, newRecipeFields) {
+        return knex('recipenest_recipes')
+            .where({id})
+            .update(newRecipeFields)
     }
 
 }
