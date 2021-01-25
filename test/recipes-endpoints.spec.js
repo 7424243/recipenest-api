@@ -23,7 +23,7 @@ describe('Recipes Endpoints', function() {
     //clear any data so that we have a fresh start
     before('clean the table', () => db.raw('TRUNCATE recipenest_users, recipenest_recipes RESTART IDENTITY CASCADE'))
 
-    //clear up table after each test
+    //clear up tables after each test
     afterEach('cleanup', () => db.raw('TRUNCATE recipenest_users, recipenest_recipes RESTART IDENTITY CASCADE'))
    
 
