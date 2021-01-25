@@ -81,6 +81,22 @@ recipesRouter
             })
             .catch(next)
     })
+    .patch(jsonParser, (req, res, next) => {
+        const {recipe_name, url, description, notes, img_url} = req.body
+        const recipeToUpdate = {recipe_name, url, description, notes, img_url}
+        const numberOfValues = Object.values(recipeToUpdate).filter(Boolean).length
+        if(numberOfValues === 0) {
+            return res.status(400).json({
+                error: {message: `Request must contain either 'recipe_name', 'url', 'description', 'notes', or 'img_url'`}
+            })
+        }
+        const knexInstance = req.app.get('db')
+        RecipesService.updateRecipe(knexInstance, req.params.recipe_id, recipeToUpdate)
+            .then(numRowsAffected => {
+                res.status(204).end()
+            })
+            .catch(next)
+    })
 
 
 module.exports = recipesRouter

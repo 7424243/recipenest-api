@@ -331,6 +331,98 @@ describe('Recipes Endpoints', function() {
             })
         })
     })
+
+    describe('PATCH /api/recipes/:recipe_id', () => {
+        
+        //no recipes in db
+        context('Given no recipes', () => {
+            it('responds with 404', () => {
+                const recipeId = 123456
+                return supertest(app)
+                    .patch(`/api/recipes/${recipeId}`)
+                    .expect(404, {
+                        error: {message: `Recipe doesn't exist`}
+                    })
+            })
+        })
+
+        //recipes in db
+        context('Given there are recipes in the database', () => {
+
+            //testing data
+            const testUsers = makeUsersArray()
+            const testRecipes = makeRecipesArray()
+
+            //insert testing data
+            beforeEach('insert recipes', () => {
+                return db
+                    .into('recipenest_users')
+                    .insert(testUsers)
+                    .then(() => {
+                        return db
+                            .into('recipenest_recipes')
+                            .insert(testRecipes)
+                    })
+            }) 
+
+            it('responds with 204 and updates the recipes', () => {
+                const idToUpdate = 2
+                const updateRecipe = {
+                    recipe_name: 'updated recipe name',
+                    url: 'update url',
+                    description: 'udpated description',
+                    notes: 'updated notes',
+                    img_url: 'updated img_url'
+                }
+                const expectedRecipe = {
+                    ...testRecipes[idToUpdate - 1],
+                    ...updateRecipe
+                }
+                return supertest(app)   
+                    .patch(`/api/recipes/${idToUpdate}`)
+                    .send(updateRecipe)
+                    .expect(204)
+                    .then(res => {
+                        supertest(app)
+                            .get(`/api/recipes/${idToUpdate}`)
+                            .expect(expectedRecipe)
+                    })
+            })
+
+            it(`responds with 400 when no required fields supplied`, () => {
+                const idToUpdate = 2
+                return supertest(app)
+                    .patch(`/api/recipes/${idToUpdate}`)
+                    .send({irrelevantField: 'irrelevant'})
+                    .expect(400, {
+                        error: {message: `Request must contain either 'recipe_name', 'url', 'description', 'notes', or 'img_url'`}
+                    })
+            })
+
+            it('responds with 204 when updating only a subset of fields', () => {
+                const idToUpdate = 2
+                const updateRecipe = {
+                    recipe_name: 'New Name!!'
+                }
+                const expectedRecipe = {
+                    ...testRecipes[idToUpdate - 1],
+                    ...updateRecipe
+                }
+                return supertest(app)
+                    .patch(`/api/recipes/${idToUpdate}`)
+                    .send({
+                        ...updateRecipe,
+                        fieldToIgnore: 'should not be in GET response'
+                    })
+                    .expect(204)
+                    .then(res => {
+                        supertest(app)
+                            .get(`/api/recipes/${idToUpdate}`)
+                            .expect(expectedRecipe)
+                    })
+            })
+        })
+    })
 })
 
 
