@@ -141,42 +141,38 @@ describe('Users Endpoints', () => {
     describe('POST /api/users/', () => {
 
         //creates a new user
-        it.only('creates a user and responds 201 and the new user', () => {
+        it('creates a user and responds 201 and the new user', () => {
+
+            //testing data
             const testUsers = makeUsersArray()
-            //console.log('testUsers', testUsers)
+            
             const newUser = {
                 full_name: 'Test fullname',
                 user_name: 'Test username',
-                password: '11AAaabb**', 
+                password: 'Testing123!', 
                 nickname: 'test',
             }
-            //console.log('newUser', newUser)
-            // return db
-            //     .into('recipenest_users')
-            //     .insert(testUsers)
-            //     .then(() => {
-                    return supertest(app)
-                        .post('/api/users/')
-                        .send(newUser)
-                        .expect(201)
-                        .expect(res => {
-                            console.log(res)
-                            expect(res.body.full_name).to.eql(newUser.full_name)
-                            expect(res.body.user_name).to.eql(newUser.user_name)
-                            expect(res.body.password).to.eql(newUser.password)
-                            expect(res.body.nickname).to.eql(newUser.nickname)
-                            expect(res.body).to.have.property('id')
-                            expect(res.headers.location).to.eql(`/api/users/${res.body.id}`)
-                            const expected = new Date().toLocaleString()
-                            const actual = new Date(res.body.date_created).toLocaleString()
-                            expect(actual).to.eql(expected)
-                        })
-                        .then(postRes => {
-                            supertest(app)
-                                .get(`/api/users/${postRes.body.id}`)
-                                .expect(postRes.body)
-                        })
-                //})
+            
+            return supertest(app)
+                .post('/api/users')
+                .send(newUser)
+                .expect(201)
+                .expect(res => {
+                    expect(res.body.full_name).to.eql(newUser.full_name)
+                    expect(res.body.user_name).to.eql(newUser.user_name)
+                    expect(res.body.password).to.eql(newUser.password)
+                    expect(res.body.nickname).to.eql(newUser.nickname)
+                    expect(res.body).to.have.property('id')
+                    expect(res.headers.location).to.eql(`/api/users/${res.body.id}`)
+                    const expected = new Date().toLocaleString()
+                    const actual = new Date(res.body.date_created).toLocaleString()
+                    expect(actual).to.eql(expected)
+                })
+                .then(postRes => {
+                    supertest(app)
+                        .get(`/api/users/${postRes.body.id}`)
+                        .expect(postRes.body)
+                })
             
         })
 

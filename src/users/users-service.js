@@ -22,16 +22,6 @@ const UsersService = {
                 return rows[0]
             })
     },
-    deleteUser(knex) {
-        return knex('recipenest_users')
-            .where({id})
-            .delete()
-    },
-    updateUser(knex, id, newUserFields) {
-        return knex('recipenest_users')
-            .where({id})
-            .update(newUserFields)
-    },
     hasUserWithUserName(knex, user_name) {
         return knex('recipenest_users')
             .where({user_name})
