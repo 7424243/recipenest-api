@@ -4,7 +4,7 @@ const supertest = require('supertest')
 const app = require('../src/app')
 const {makeUsersArray, makeMaliciousUser} = require('./users.fixtures')
 
-describe.only('Users Endpoints', () => {
+describe('Users Endpoints', () => {
 
     //create a connection to the test db
     let db
@@ -74,7 +74,6 @@ describe.only('Users Endpoints', () => {
                     .expect(200)
                     .expect(res => {
                         expect(res.body[0].full_name).to.eql(expectedUser.full_name)
-                        expect(res.body[0].password).to.eql(expectedUser.password)
                     })
             })
         })
@@ -133,75 +132,83 @@ describe.only('Users Endpoints', () => {
                     .expect(200)
                     .expect(res => {
                         expect(res.body.full_name).to.eql(expectedUser.full_name)
-                        expect(res.body.password).to.eql(expectedUser.password)
+                        
                     })
             })
         })
     })
 
     describe('POST /api/users/', () => {
-        
-        //testing data
-        const testUsers = makeUsersArray()
 
-        //insert testing data
-        beforeEach('insert users', () => {
+        //creates a new user
+        it.only('creates a user and responds 201 and the new user', () => {
+            const testUsers = makeUsersArray()
+            //console.log('testUsers', testUsers)
+            const newUser = {
+                full_name: 'Test fullname',
+                user_name: 'Test username',
+                password: '11AAaabb**', 
+                nickname: 'test',
+            }
+            //console.log('newUser', newUser)
             return db
                 .into('recipenest_users')
                 .insert(testUsers)
-        })
-        
-        context('successfully creates new user', () => {
+                .then(() => {
+                    return supertest(app)
+                        .post('/api/users/')
+                        .send(newUser)
+                        .expect(201)
+                        .expect(res => {
+                            console.log(res)
+                            expect(res.body.full_name).to.eql(newUser.full_name)
+                            expect(res.body.user_name).to.eql(newUser.user_name)
+                            expect(res.body.password).to.eql(newUser.password)
+                            expect(res.body.nickname).to.eql(newUser.nickname)
+                            expect(res.body).to.have.property('id')
+                            expect(res.headers.location).to.eql(`/api/users/${res.body.id}`)
+                            const expected = new Date().toLocaleString()
+                            const actual = new Date(res.body.date_created).toLocaleString()
+                            expect(actual).to.eql(expected)
+                        })
+                        .then(postRes => {
+                            supertest(app)
+                                .get(`/api/users/${postRes.body.id}`)
+                                .expect(postRes.body)
+                        })
+                })
             
-            //creates a new user
-            it('creates a user and responds 201 and the new user', () => {
-                const newUser = {
-                    full_name: 'Test fullname',
-                    user_name: 'Test username',
-                    password: 'Testing123!', 
-                    nickname: 'test'
-                }
-                return supertest(app)
-                    .post('/api/users/')
-                    .send(newUser)
-                    .expect(201)
-                    .expect(res => {
-                        expect(res.body.full_name).to.eql(newUser.full_name)
-                        expect(res.body.user_name).to.eql(newUser.user_name)
-                        expect(res.body.password).to.eql(newUser.password)
-                        expect(res.body.nickname).to.eql(newUser.nickname)
-                        expect(res.body).to.have.property('id')
-                        expect(res.headers.location).to.eql(`/api/users/${res.body.id}`)
-                        const expected = new Date().toLocaleString()
-                        const actual = new Date(res.body.date_created).toLocaleString()
-                        expect(actual).to.eql(expected)
-                    })
-                    .then(postRes => {
-                        supertest(app)
-                            .get(`/api/users/${postRes.body.id}`)
-                            .expect(postRes.body)
-                    })
-            })
+        })
 
             //xss attack content
-            it('removes XSS attack content from response', () => {
+        it('removes XSS attack content from response', () => {
 
-                //testing data
-                const {maliciousUser, expectedUser} = makeMaliciousUser()
+            //testing data
+            const {maliciousUser, expectedUser} = makeMaliciousUser()
 
-                return supertest(app)
-                    .post('/api/users/')
-                    .send(maliciousUser)
-                    .expect(201)
-                    .expect(res => {
-                        expect(res.body.full_name).to.eql(expectedUser.full_name)
-                        expect(res.body.password).to.eql(expectedUser.password)
-                    })
-            })
+            return supertest(app)
+                .post('/api/users/')
+                .send(maliciousUser)
+                .expect(201)
+                .expect(res => {
+                    expect(res.body.full_name).to.eql(expectedUser.full_name)
+                })
+        
         })
         
         //validation tests
         context('validation for required fields, password complexity, and user_name uniqueness', () => {
+            
+            //testing data
+            const testUsers = makeUsersArray()
+
+            //insert test data
+            beforeEach('insert users', () => {
+                return db
+                    .into('recipenest_users')
+                    .insert(testUsers)
+            })
+
             //validation test for full_name requirement
             it(`responds with 400 and an error message when the 'full_name' is missing`, () => {
                 const newUserNoFullName = {
@@ -335,8 +342,8 @@ describe.only('Users Endpoints', () => {
                         error: {message: 'Username already taken'}
                     })
             })
-        })
         
+        })
 
     })
 })

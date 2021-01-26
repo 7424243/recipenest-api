@@ -24,14 +24,14 @@ function makeMaliciousUser() {
         id: 911,
         full_name: 'Naughty naughty very naughty <script>alert("xss");</script>',
         user_name: 'test username',
-        password: `Bad image <img src="https://url.to.file.which/does-not.exist" onerror="alert(document.cookie);">. But not <strong>all</strong> bad.`,
+        password: `Testing123!`,
         nickname: 'test',
         date_created: new Date().toISOString(),
     }
     const expectedUser = {
         ...maliciousUser,
         full_name: 'Naughty naughty very naughty &lt;script&gt;alert(\"xss\");&lt;/script&gt;',
-        password: `Bad image <img src="https://url.to.file.which/does-not.exist">. But not <strong>all</strong> bad.`
+        
     }
     return {
         maliciousUser,

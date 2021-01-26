@@ -2,7 +2,6 @@ const express = require('express')
 const xss = require('xss')
 const UsersService = require('./users-service')
 const path = require('path')
-const { hasUserWithUserName } = require('./users-service')
 
 const usersRouter = express.Router()
 const jsonParser = express.json()
