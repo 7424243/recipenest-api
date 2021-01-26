@@ -151,10 +151,10 @@ describe('Users Endpoints', () => {
                 nickname: 'test',
             }
             //console.log('newUser', newUser)
-            return db
-                .into('recipenest_users')
-                .insert(testUsers)
-                .then(() => {
+            // return db
+            //     .into('recipenest_users')
+            //     .insert(testUsers)
+            //     .then(() => {
                     return supertest(app)
                         .post('/api/users/')
                         .send(newUser)
@@ -176,7 +176,7 @@ describe('Users Endpoints', () => {
                                 .get(`/api/users/${postRes.body.id}`)
                                 .expect(postRes.body)
                         })
-                })
+                //})
             
         })
 
