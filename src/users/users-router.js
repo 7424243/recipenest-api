@@ -55,13 +55,24 @@ usersRouter
                     return res.status(400).json({
                         error: {message: `Username already taken`}
                     })
-                return UsersService.insertUser(knexInstance, newUser)
-                    .then(user => {
-                        res 
-                            .status(201)
-                            .location(path.posix.join(req.originalUrl, `/${user.id}`))
-                            .json(serializeUser(user))
+                return UsersService.hashPassword(password)
+                    .then(hashedPassword => {
+                        const newUser = {
+                            user_name,
+                            password: hashedPassword,
+                            full_name,
+                            nickname,
+                            date_created: 'now()'
+                        }
+                        return UsersService.insertUser(knexInstance, newUser)
+                            .then(user => {
+                                res 
+                                    .status(201)
+                                    .location(path.posix.join(req.originalUrl, `/${user.id}`))
+                                    .json(serializeUser(user))
+                            })
                     })
+
             })
             .catch(next)
     })

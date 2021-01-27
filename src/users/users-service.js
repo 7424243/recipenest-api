@@ -1,3 +1,5 @@
+const bcrypt = require('bcryptjs')
+
 const REGEX_UPPER_LOWER_NUMBER_SPECIAL = /(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&])[\S]+/
 
 const UsersService = {
@@ -18,9 +20,7 @@ const UsersService = {
             .insert(newUser)
             .into('recipenest_users')
             .returning('*')
-            .then(rows => {
-                return rows[0]
-            })
+            .then(([user]) => user)
     },
     hasUserWithUserName(knex, user_name) {
         return knex('recipenest_users')
@@ -42,6 +42,9 @@ const UsersService = {
             return 'Password must contain 1 upper case, lower case, number and special character'
         }
         return null
+    },
+    hashPassword(password) {
+        return bcrypt.hash(password, 12)
     }
 }
 

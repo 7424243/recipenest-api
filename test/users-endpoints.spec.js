@@ -3,6 +3,7 @@ const knex = require('knex')
 const supertest = require('supertest')
 const app = require('../src/app')
 const {makeUsersArray, makeMaliciousUser} = require('./users.fixtures')
+const bcrypt = require('bcryptjs')
 
 describe('Users Endpoints', () => {
 
@@ -160,7 +161,6 @@ describe('Users Endpoints', () => {
                 .expect(res => {
                     expect(res.body.full_name).to.eql(newUser.full_name)
                     expect(res.body.user_name).to.eql(newUser.user_name)
-                    expect(res.body.password).to.eql(newUser.password)
                     expect(res.body.nickname).to.eql(newUser.nickname)
                     expect(res.body).to.have.property('id')
                     expect(res.headers.location).to.eql(`/api/users/${res.body.id}`)
@@ -168,11 +168,26 @@ describe('Users Endpoints', () => {
                     const actual = new Date(res.body.date_created).toLocaleString()
                     expect(actual).to.eql(expected)
                 })
-                .then(postRes => {
-                    supertest(app)
-                        .get(`/api/users/${postRes.body.id}`)
-                        .expect(postRes.body)
-                })
+                .expect(res => 
+                    db  
+                        .from('recipenest_users')
+                        .select('*')
+                        .where({id: res.body.id})
+                        .first()
+                        .then(row => {
+                            expect(row.user_name).to.eql(newUser.user_name)
+                            expect(row.full_name).to.eql(newUser.full_name)
+                            expect(row.nickname).to.eql(newUser.nickname)
+                            const expected = new Date().toLocaleString()
+                            const actual = new Date(row.date_created).toLocaleString()
+                            expect(actual).to.eql(expected)
+                            return bcrypt.compare(newUser.password, row.password)
+                        })
+                        .then(compareMatch => {
+                            expect(compareMatch).to.be.true
+                        })
+                )
+
             
         })
 
