@@ -4,18 +4,15 @@ const supertest = require('supertest')
 const app = require('../src/app')
 const {makeRecipesArray, makeMaliciousRecipe} = require('./recipes.fixtures')
 const {makeUsersArray} = require('./users.fixtures')
-const {hashUserPassword} = require('./test-helpers')
-const jwt = require('jsonwebtoken')
+const {hashUserPassword, makeAuthHeader} = require('./test-helpers')
 
-describe('Recipes Endpoints', function() {
 
-    function makeAuthHeader(user, secret = process.env.JWT_SECRET) {
-        const token = jwt.sign({user_id: user.id}, secret, {
-            subject: user.user_name,
-            algorithm: 'HS256'
-        })
-        return `Bearer ${token}`
-    }
+describe.only('Recipes Endpoints', function() {
+
+    //some test data
+    const testUsers = makeUsersArray()
+    const testRecipes = makeRecipesArray()
+    const protectedUsers = hashUserPassword(testUsers)
 
     //create a connection to the test database
     let db
@@ -39,13 +36,8 @@ describe('Recipes Endpoints', function() {
 
     describe(`Protected Endpoints`, () => {
 
-        //some test data
-        const testUsers = makeUsersArray()
-        const testRecipes = makeRecipesArray()
-
         //insert the test data
         beforeEach('insert recipes', () => {
-            const protectedUsers = hashUserPassword(testUsers)
             return db
                 .into('recipenest_users')
                 .insert(protectedUsers)
@@ -56,7 +48,9 @@ describe('Recipes Endpoints', function() {
                 })
         })
 
+        //test that POST endpoint is protected
         describe(`POST /api/recipes/`, () => {
+
             const newRecipe = {
                 recipe_name: 'Test recipe',
                 url: 'https://www.testing123.com',
@@ -65,12 +59,14 @@ describe('Recipes Endpoints', function() {
                 img_url: 'https://ww.img.com"',
                 user_id: 1
             }
+
             it(`responds with 401 'Missing bearer token' when no bearer token`, () => {
                 return supertest(app)
                     .post(`/api/recipes/`)
                     .send(newRecipe)
                     .expect(401, {error: `Missing bearer token`})
             })
+
             it(`responds 401 'Unauthorized request' when invalid JWT secret`, () => {
                 const validUser = testUsers[0]
                 const invalidSecret = 'bad-secret'
@@ -80,6 +76,7 @@ describe('Recipes Endpoints', function() {
                     .send(newRecipe)
                     .expect(401, {error: `Unauthorized request`})
             })
+
             it(`responds 401 'Unauthorized request' when invalid subject in payload`, () => {
                 const invalidUser = {user_name: 'no-exists', id: 1}
                 return supertest(app)
@@ -88,9 +85,12 @@ describe('Recipes Endpoints', function() {
                     .send(newRecipe)
                     .expect(401, {error: 'Unauthorized request'})
             })
+
         })
 
+        //test that DELETE endpoint is protected
         describe(`DELETE /api/recipes/:recipe_id`, () => {
+
             const idToRemove = 2
 
             it(`responds with 401 'Missing basic token' when no basic token`, () => {
@@ -98,6 +98,7 @@ describe('Recipes Endpoints', function() {
                     .delete(`/api/recipes/${idToRemove}`)
                     .expect(401, {error: `Missing bearer token`})
             })
+
             it(`responds 401 'Unauthorized request' when no credentials in token`, () => {
                 const userNoCreds = {user_name: '', password: ''}
                 return supertest(app)
@@ -105,6 +106,7 @@ describe('Recipes Endpoints', function() {
                     .set('Authorization', makeAuthHeader(userNoCreds))
                     .expect(401, {error: `Unauthorized request`})
             })
+
             it(`responds 401 'Unauthorized request' when invalid subject in payload`, () => {
                 const invalidUser = {user_name: 'no-exists', id: 1}
                 return supertest(app)
@@ -115,7 +117,9 @@ describe('Recipes Endpoints', function() {
 
         }) 
         
+        //test that PATCH endpoint is protected
         describe(`PATCH /api/recipes/:recipe_id`, () => {
+
             const idToUpdate = 2
             const updateRecipe = {
                 recipe_name: 'updated recipe name',
@@ -124,12 +128,14 @@ describe('Recipes Endpoints', function() {
                 notes: 'updated notes',
                 img_url: 'updated img_url'
             }
+
             it(`responds with 401 'Missing basic token' when no basic token`, () => {
                 return supertest(app)
                     .patch(`/api/recipes/${idToUpdate}`)
                     .send(updateRecipe)
                     .expect(401, {error: `Missing bearer token`})
             })
+
             it(`responds 401 'Unauthorized request' when no credentials in token`, () => {
                 const userNoCreds = {user_name: '', password: ''}
                 return supertest(app)
@@ -138,6 +144,7 @@ describe('Recipes Endpoints', function() {
                     .send(updateRecipe)
                     .expect(401, {error: `Unauthorized request`})
             })
+
             it(`responds 401 'Unauthorized request' when invalid subject in payload`, () => {
                 const invalidUser = {user_name: 'no-exists', id: 1}
                 return supertest(app)
@@ -164,13 +171,8 @@ describe('Recipes Endpoints', function() {
         //for when the db table has data
         context('Given there are recipes in the database', () => {
 
-            //some test data
-            const testUsers = makeUsersArray()
-            const testRecipes = makeRecipesArray()
-
             //insert the test data
             beforeEach('insert recipes', () => {
-                const protectedUsers = hashUserPassword(testUsers)
                 return db
                     .into('recipenest_users')
                     .insert(protectedUsers)
@@ -187,18 +189,17 @@ describe('Recipes Endpoints', function() {
                     .get('/api/recipes/')
                     .expect(200, testRecipes)
             })
+
         })
 
         //test for malicious recipe
         context('Given an XSS attack recipe', () => {
 
             //test data
-            const testUsers = makeUsersArray()
             const {maliciousRecipe, expectedRecipe} = makeMaliciousRecipe()
 
             //insert data
             beforeEach('insert malicious recipe', () => {
-                const protectedUsers = hashUserPassword(testUsers)
                 return db
                     .into('recipenest_users')
                     .insert(protectedUsers)
@@ -234,14 +235,9 @@ describe('Recipes Endpoints', function() {
 
         //test for when there are recipes in the db
         context(`Given there are recipes in the database`, () => {
-            
-            //make test data
-            const testUsers = makeUsersArray()
-            const testRecipes = makeRecipesArray()
 
             //insert the test data
             beforeEach('insert recipes', () => {
-                const protectedUsers = hashUserPassword(testUsers)
                 return db
                     .into('recipenest_users')
                     .insert(protectedUsers)
@@ -263,13 +259,12 @@ describe('Recipes Endpoints', function() {
 
         //test for xxs attacks
         context('Given an XXS attack recipe', () => {
+
             //test data
-            const testUsers = makeUsersArray()
             const {maliciousRecipe, expectedRecipe} = makeMaliciousRecipe()
 
             //insert data
             beforeEach('insert malicious recipe', () => {
-                const protectedUsers = hashUserPassword(testUsers)
                 return db
                     .into('recipenest_users')
                     .insert(protectedUsers)
@@ -295,7 +290,6 @@ describe('Recipes Endpoints', function() {
 
         //creating a new recipe and a 201 response
         it('creates a recipe and responds with 201 and the new recipe', () => {
-            const testUsers = makeUsersArray()
             this.retries(3)
             const newRecipe = {
                 recipe_name: 'Test recipe',
@@ -305,7 +299,6 @@ describe('Recipes Endpoints', function() {
                 img_url: 'https://ww.img.com"',
                 user_id: 1
             }
-            const protectedUsers = hashUserPassword(testUsers)
             return db
                 .into('recipenest_users')
                 .insert(protectedUsers)
@@ -339,9 +332,6 @@ describe('Recipes Endpoints', function() {
 
         //validation test for recipe_name requirement
         it(`responds with 400 and an error message when the 'recipe_name' is missing`, () => {
-            const testUsers = makeUsersArray()
-
-            const protectedUsers = hashUserPassword(testUsers)
             return db
                 .into('recipenest_users')
                 .insert(protectedUsers)
@@ -365,9 +355,6 @@ describe('Recipes Endpoints', function() {
 
         //validation test for url requirement
         it(`responds with 400 and an error message when the 'url' is missing`, () => {
-            const testUsers = makeUsersArray()
-            
-            const protectedUsers = hashUserPassword(testUsers)
             return db
                 .into('recipenest_users')
                 .insert(protectedUsers)
@@ -391,8 +378,6 @@ describe('Recipes Endpoints', function() {
 
         //validation test for user_id requirement
         it(`responds with 400 and an error message when the 'user_id' is missing`, () => {
-            const testUsers = makeUsersArray()
-            const protectedUsers = hashUserPassword(testUsers)
             return db
                 .into('recipenest_users')
                 .insert(protectedUsers)
@@ -416,9 +401,10 @@ describe('Recipes Endpoints', function() {
 
         //xss attack content
         it('removes XSS attack content from response', () => {
-            const testUsers = makeUsersArray()
+
+            //test data
             const {maliciousRecipe, expectedRecipe} = makeMaliciousRecipe()
-            const protectedUsers = hashUserPassword(testUsers)
+
             return db
                 .into('recipenest_users')
                 .insert(protectedUsers)
@@ -450,14 +436,9 @@ describe('Recipes Endpoints', function() {
 
         //recipes in db
         context('Given there are recipes in the database', () => {
-
-            //testing data
-            const testUsers = makeUsersArray()
-            const testRecipes = makeRecipesArray()
             
             //insert testing data
             beforeEach('insert recipes', () => {
-                const protectedUsers = hashUserPassword(testUsers)
                 return db
                     .into('recipenest_users')
                     .insert(protectedUsers)
@@ -489,7 +470,6 @@ describe('Recipes Endpoints', function() {
         //no recipes in db
         context('Given no recipes', () => {
             it('responds with 404', () => {
-                const testUsers = makeUsersArray()
                 const recipeId = 123456
                 return supertest(app)
                     .patch(`/api/recipes/${recipeId}`)
@@ -503,13 +483,8 @@ describe('Recipes Endpoints', function() {
         //recipes in db
         context('Given there are recipes in the database', () => {
 
-            //testing data
-            const testUsers = makeUsersArray()
-            const testRecipes = makeRecipesArray()
-
             //insert testing data
             beforeEach('insert recipes', () => {
-                const protectedUsers = hashUserPassword(testUsers)
                 return db
                     .into('recipenest_users')
                     .insert(protectedUsers)
@@ -521,7 +496,6 @@ describe('Recipes Endpoints', function() {
             }) 
 
             it('responds with 204 and updates the recipes', () => {
-                const testUsers = makeUsersArray()
                 const idToUpdate = 2
                 const updateRecipe = {
                     recipe_name: 'updated recipe name',
@@ -547,7 +521,6 @@ describe('Recipes Endpoints', function() {
             })
 
             it(`responds with 400 when no required fields supplied`, () => {
-                const testUsers = makeUsersArray()
                 const idToUpdate = 2
                 return supertest(app)
                     .patch(`/api/recipes/${idToUpdate}`)
@@ -559,7 +532,6 @@ describe('Recipes Endpoints', function() {
             })
 
             it('responds with 204 when updating only a subset of fields', () => {
-                const testUsers = makeUsersArray()
                 const idToUpdate = 2
                 const updateRecipe = {
                     recipe_name: 'New Name!!'
