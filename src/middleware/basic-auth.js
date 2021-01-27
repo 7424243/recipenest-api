@@ -1,3 +1,6 @@
+const AuthService = require('../auth/auth-service')
+const usersRouter = require('../users/users-router')
+
 function requireAuth(req, res, next) {
 
     console.log('requireAuth' ,req.get('Authorization'))
@@ -31,8 +34,15 @@ function requireAuth(req, res, next) {
             if (!user) {
                 return res.status(401).json({ error: 'Unauthorized request' })
             }
+            return AuthService.comparePasswords(tokenPassword, user.password)
+                .then(passwordsMatch => {
+                    if(!passwordsMatch) {
+                        return res.status(401).json({error: 'Unauthorized request'})
+                    }
+                    req.user = user
+                    next()
 
-            next()
+                })
         })
         .catch(next)
     
