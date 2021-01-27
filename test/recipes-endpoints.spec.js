@@ -7,7 +7,7 @@ const {makeUsersArray} = require('./users.fixtures')
 const {hashUserPassword, makeAuthHeader} = require('./test-helpers')
 
 
-describe.only('Recipes Endpoints', function() {
+describe('Recipes Endpoints', function() {
 
     //some test data
     const testUsers = makeUsersArray()

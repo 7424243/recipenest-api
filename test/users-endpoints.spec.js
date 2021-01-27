@@ -7,6 +7,9 @@ const bcrypt = require('bcryptjs')
 
 describe('Users Endpoints', () => {
 
+    //make testing data
+    const testUsers = makeUsersArray()
+
     //create a connection to the test db
     let db
     before('make knex instance', () => {
@@ -30,7 +33,9 @@ describe('Users Endpoints', () => {
 
         //for when the db table is empty
         context('Given no users', () => {
+
             it('responds with 200 and an empty list', () => {
+
                 return supertest(app)
                     .get('/api/users/')
                     .expect(200, [])
@@ -40,9 +45,6 @@ describe('Users Endpoints', () => {
         //for whe nthe db table has data
         context('Given there are users in the database', () => {
 
-            //make testing data
-            const testUsers = makeUsersArray()
-
             //insert test data
             beforeEach('insert users', () => {
                 return db   
@@ -51,9 +53,11 @@ describe('Users Endpoints', () => {
             })
 
             it('GET /api/users/ responds with 200 and all of the users', () => {
+
                 return supertest(app)
                     .get('/api/users/')
                     .expect(200, testUsers)
+
             })
         })
 
@@ -69,13 +73,16 @@ describe('Users Endpoints', () => {
                     .into('recipenest_users')
                     .insert(maliciousUser)
             })
+
             it('removes XSS attack content', () => {
+
                 return supertest(app)
                     .get('/api/users/')
                     .expect(200)
                     .expect(res => {
                         expect(res.body[0].full_name).to.eql(expectedUser.full_name)
                     })
+
             })
         })
     })
@@ -84,19 +91,23 @@ describe('Users Endpoints', () => {
         
         //no data in the db
         context('Given no users', () => {
+
             it('responds with 404', () => {
+
                 const userId = 123456
+
                 return supertest(app)
                     .get(`/api/users/${userId}`)
-                    .expect(404, {error: {message: `User doesn't exist`}})
+                    .expect(404, {
+                        error: {message: `User doesn't exist`}
+                    })
+
             })
+
         })
 
         //data in the db
         context('Given there are users in the database', () => {
-
-            //testing data
-            const testUsers = makeUsersArray()
 
             //insert test data
             beforeEach('insert users', () => {
@@ -106,12 +117,14 @@ describe('Users Endpoints', () => {
             })
 
             it('responds with 200 and the user', () => {
+
                 const userId = 1
                 const expectedUser = testUsers[userId - 1]
                 return supertest(app)
                     .get(`/api/users/${userId}`)
                     .expect(200, expectedUser)
             })
+
         })
 
         //XSS attack
@@ -128,6 +141,7 @@ describe('Users Endpoints', () => {
             })
 
             it('removes the XSS attack content', () => {
+
                 return supertest(app)
                     .get(`/api/users/${maliciousUser.id}`)
                     .expect(200)
@@ -136,6 +150,7 @@ describe('Users Endpoints', () => {
                         
                     })
             })
+
         })
     })
 
@@ -143,9 +158,6 @@ describe('Users Endpoints', () => {
 
         //creates a new user
         it('creates a user and responds 201 and the new user', () => {
-
-            //testing data
-            const testUsers = makeUsersArray()
             
             const newUser = {
                 full_name: 'Test fullname',
@@ -187,8 +199,6 @@ describe('Users Endpoints', () => {
                             expect(compareMatch).to.be.true
                         })
                 )
-
-            
         })
 
             //xss attack content
@@ -209,9 +219,6 @@ describe('Users Endpoints', () => {
         
         //validation tests
         context('validation for required fields, password complexity, and user_name uniqueness', () => {
-            
-            //testing data
-            const testUsers = makeUsersArray()
 
             //insert test data
             beforeEach('insert users', () => {
@@ -222,47 +229,56 @@ describe('Users Endpoints', () => {
 
             //validation test for full_name requirement
             it(`responds with 400 and an error message when the 'full_name' is missing`, () => {
+
                 const newUserNoFullName = {
                     user_name: 'Test username',
                     password: 'Testing123!', 
                     nickname: 'test'
                 }
+
                 return supertest(app)
                     .post('/api/users/')
                     .send(newUserNoFullName)
                     .expect(400, {
                         error: {message: `Missing 'full_name' in request body`}
                     })
+
             })
 
             //validation test for user_name requirement 
             it(`responds with 400 and an error message when the 'user_name' is missing`, () => {
+
                 const newUserNoUserName = {
                     full_name: 'Test fullname',
                     password: 'Testing123!', 
                     nickname: 'test'
                 }
+
                 return supertest(app)
                     .post('/api/users/')
                     .send(newUserNoUserName)
                     .expect(400, {
                         error: {message: `Missing 'user_name' in request body`}
                     })
+
             })
 
             //validation test for password requirement
             it(`responds with 400 and an error message when the 'password' is missing`, () => {
+
                 const newUserNoPassword = {
                     full_name: 'Test fullname',
                     user_name: 'Test username',
                     nickname: 'test'
                 }
+
                 return supertest(app)
                     .post('/api/users/')
                     .send(newUserNoPassword)
                     .expect(400, {
                         error: {message: `Missing 'password' in request body`}
                     })
+
             })
 
             //validation tests for password 
@@ -274,67 +290,89 @@ describe('Users Endpoints', () => {
                     nickname: 'test'
                 }
                 return supertest(app)
+                
                     .post('/api/users/')
                     .send(newUserShortPassword)
                     .expect(400, {
                         error: {message: `Password must be longer than 8 characters`}
                     })
+
             })
+
+            //validation tests for password 
             it(`responds with 400 'Password must be shorter than 72 characters'`, () => {
+
                 const newUserLongPassword = {
                     full_name: 'Test fullname',
                     user_name: 'Test username',
                     password: '*'.repeat(73), 
                     nickname: 'test'
                 }
+
                 return supertest(app)
                     .post('/api/users/')
                     .send(newUserLongPassword)
                     .expect(400, {
                         error: {message: `Password must be less than 72 characters`}
                     })
+
             })
+
+            //validation tests for password 
             it(`responds with 400 when password starts with spaces`, () => {
+
                 const newUserPasswordStartsSpaces = {
                     full_name: 'Test fullname',
                     user_name: 'Test username',
                     password: ' Testing123!', 
                     nickname: 'test'
                 }
+
                 return supertest(app)
                     .post('/api/users/')
                     .send(newUserPasswordStartsSpaces)
                     .expect(400, {
                         error: {message: `Password must not start or end with empty spaces`}
                     })
+
             })
+
+            //validation tests for password 
             it(`responds with 400 when password ends with spaces`, () => {
+
                 const newUserPasswordEndsSpaces = {
                     full_name: 'Test fullname',
                     user_name: 'Test username',
                     password: 'Testing123! ', 
                     nickname: 'test'
                 }
+
                 return supertest(app)
                     .post('/api/users/')
                     .send(newUserPasswordEndsSpaces)
                     .expect(400, {
                         error: {message: `Password must not start or end with empty spaces`}
                     })
+
             })
+
+            //validation tests for password 
             it(`respond with 400 when password isn't complex enough`, () => {
+
                 const newUserPasswordNotComplex = {
                     full_name: 'Test fullname',
                     user_name: 'Test username',
                     password: '11AAaabb', 
                     nickname: 'test'
                 }
+
                 return supertest(app)
                     .post('/api/users/')
                     .send(newUserPasswordNotComplex)
                     .expect(400, {
                         error: {message: `Password must contain 1 upper case, lower case, number and special character`}
                     })
+
             })
 
             //validation test for inique user_name
@@ -346,12 +384,14 @@ describe('Users Endpoints', () => {
                     password: 'Testing123!', 
                     nickname: 'test'
                 }
+
                 return supertest(app)
                     .post('/api/users/')
                     .send(newDuplicateUserName)
                     .expect(400, {
                         error: {message: 'Username already taken'}
                     })
+
             })
         
         })
