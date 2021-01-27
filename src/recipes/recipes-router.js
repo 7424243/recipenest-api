@@ -2,6 +2,7 @@ const express = require('express')
 const xss = require('xss')
 const RecipesService = require('./recipes-service')
 const path = require('path')
+const {requireAuth} = require('../middleware/basic-auth')
 
 const recipesRouter = express.Router()
 const jsonParser = express.json()
@@ -27,7 +28,7 @@ recipesRouter
             })
             .catch(next)
     })
-    .post(jsonParser, (req, res, next) => {
+    .post(requireAuth, jsonParser, (req, res, next) => {
         const {recipe_name, url, description, notes, img_url, user_id} = req.body
         const newRecipe = {recipe_name, url, user_id}
         
@@ -73,7 +74,7 @@ recipesRouter
     .get((req, res, next) => {
         res.json(serializeRecipe(res.recipe))
     })
-    .delete((req, res, next) => {
+    .delete(requireAuth, (req, res, next) => {
         const knexInstance = req.app.get('db')
         RecipesService.deleteRecipe(knexInstance, req.params.recipe_id)
             .then(numRowsAffected => {
@@ -81,7 +82,7 @@ recipesRouter
             })
             .catch(next)
     })
-    .patch(jsonParser, (req, res, next) => {
+    .patch(requireAuth, jsonParser, (req, res, next) => {
         const {recipe_name, url, description, notes, img_url} = req.body
         const recipeToUpdate = {recipe_name, url, description, notes, img_url}
         const numberOfValues = Object.values(recipeToUpdate).filter(Boolean).length
