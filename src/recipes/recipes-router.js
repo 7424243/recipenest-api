@@ -2,7 +2,7 @@ const express = require('express')
 const xss = require('xss')
 const RecipesService = require('./recipes-service')
 const path = require('path')
-const {requireAuth} = require('../middleware/basic-auth')
+const {requireAuth} = require('../middleware/jwt-auth')
 
 const recipesRouter = express.Router()
 const jsonParser = express.json()

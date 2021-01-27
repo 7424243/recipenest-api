@@ -5,7 +5,7 @@ const {hashUserPassword} = require('./test-helpers')
 const {makeUsersArray} = require('./users.fixtures')
 const jwt = require('jsonwebtoken')
 
-describe.only(`Auth Endpoints`, () => {
+describe(`Auth Endpoints`, () => {
     let db
 
     const testUsers = makeUsersArray()

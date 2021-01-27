@@ -5,12 +5,16 @@ const app = require('../src/app')
 const {makeRecipesArray, makeMaliciousRecipe} = require('./recipes.fixtures')
 const {makeUsersArray} = require('./users.fixtures')
 const {hashUserPassword} = require('./test-helpers')
+const jwt = require('jsonwebtoken')
 
 describe('Recipes Endpoints', function() {
 
-    function makeAuthHeader(user) {
-        const token = Buffer.from(`${user.user_name}:${user.password}`).toString('base64')
-        return `Basic ${token}`
+    function makeAuthHeader(user, secret = process.env.JWT_SECRET) {
+        const token = jwt.sign({user_id: user.id}, secret, {
+            subject: user.user_name,
+            algorithm: 'HS256'
+        })
+        return `Bearer ${token}`
     }
 
     //create a connection to the test database
@@ -61,33 +65,26 @@ describe('Recipes Endpoints', function() {
                 img_url: 'https://ww.img.com"',
                 user_id: 1
             }
-            it(`responds with 401 'Missing basic token' when no basic token`, () => {
+            it(`responds with 401 'Missing bearer token' when no bearer token`, () => {
                 return supertest(app)
                     .post(`/api/recipes/`)
                     .send(newRecipe)
-                    .expect(401, {error: `Missing basic token`})
+                    .expect(401, {error: `Missing bearer token`})
             })
-            it(`responds 401 'Unauthorized request' when no credentials in token`, () => {
-                const userNoCreds = {user_name: '', password: ''}
+            it(`responds 401 'Unauthorized request' when invalid JWT secret`, () => {
+                const validUser = testUsers[0]
+                const invalidSecret = 'bad-secret'
                 return supertest(app)
                     .post(`/api/recipes/`)
-                    .set('Authorization', makeAuthHeader(userNoCreds))
+                    .set('Authorization', makeAuthHeader(validUser, invalidSecret))
                     .send(newRecipe)
                     .expect(401, {error: `Unauthorized request`})
             })
-            it(`responds 401 'Unauthorized request' when invalid user`, () => {
-                const userInvalidCreds = {user_name: 'user_not', password: 'nope'}
+            it(`responds 401 'Unauthorized request' when invalid subject in payload`, () => {
+                const invalidUser = {user_name: 'no-exists', id: 1}
                 return supertest(app)
                     .post('/api/recipes/')
-                    .set('Authorization', makeAuthHeader(userInvalidCreds))
-                    .send(newRecipe)
-                    .expect(401, {error: 'Unauthorized request'})
-            })
-            it(`responds 401 'Unauthorized request' when invalid password`, () => {
-                const userInvalidPass = {user_name: testUsers[0], password: 'wrong'}
-                return supertest(app)
-                    .post('/api/recipes/')
-                    .set('Authorization', makeAuthHeader(userInvalidPass))
+                    .set('Authorization', makeAuthHeader(invalidUser))
                     .send(newRecipe)
                     .expect(401, {error: 'Unauthorized request'})
             })
@@ -99,7 +96,7 @@ describe('Recipes Endpoints', function() {
             it(`responds with 401 'Missing basic token' when no basic token`, () => {
                 return supertest(app)
                     .delete(`/api/recipes/${idToRemove}`)
-                    .expect(401, {error: `Missing basic token`})
+                    .expect(401, {error: `Missing bearer token`})
             })
             it(`responds 401 'Unauthorized request' when no credentials in token`, () => {
                 const userNoCreds = {user_name: '', password: ''}
@@ -108,20 +105,14 @@ describe('Recipes Endpoints', function() {
                     .set('Authorization', makeAuthHeader(userNoCreds))
                     .expect(401, {error: `Unauthorized request`})
             })
-            it(`responds 401 'Unauthorized request' when invalid user`, () => {
-                const userInvalidCreds = {user_name: 'user_not', password: 'nope'}
+            it(`responds 401 'Unauthorized request' when invalid subject in payload`, () => {
+                const invalidUser = {user_name: 'no-exists', id: 1}
                 return supertest(app)
                     .delete(`/api/recipes/${idToRemove}`)
-                    .set('Authorization', makeAuthHeader(userInvalidCreds))
+                    .set('Authorization', makeAuthHeader(invalidUser))
                     .expect(401, {error: 'Unauthorized request'})
             })
-            it(`responds 401 'Unauthorized request' when invalid password`, () => {
-                const userInvalidPass = {user_name: testUsers[0], password: 'wrong'}
-                return supertest(app)
-                    .delete(`/api/recipes/${idToRemove}`)
-                    .set('Authorization', makeAuthHeader(userInvalidPass))
-                    .expect(401, {error: 'Unauthorized request'})
-            })
+
         }) 
         
         describe(`PATCH /api/recipes/:recipe_id`, () => {
@@ -137,7 +128,7 @@ describe('Recipes Endpoints', function() {
                 return supertest(app)
                     .patch(`/api/recipes/${idToUpdate}`)
                     .send(updateRecipe)
-                    .expect(401, {error: `Missing basic token`})
+                    .expect(401, {error: `Missing bearer token`})
             })
             it(`responds 401 'Unauthorized request' when no credentials in token`, () => {
                 const userNoCreds = {user_name: '', password: ''}
@@ -147,22 +138,15 @@ describe('Recipes Endpoints', function() {
                     .send(updateRecipe)
                     .expect(401, {error: `Unauthorized request`})
             })
-            it(`responds 401 'Unauthorized request' when invalid user`, () => {
-                const userInvalidCreds = {user_name: 'user_not', password: 'nope'}
+            it(`responds 401 'Unauthorized request' when invalid subject in payload`, () => {
+                const invalidUser = {user_name: 'no-exists', id: 1}
                 return supertest(app)
                     .patch(`/api/recipes/${idToUpdate}`)
-                    .set('Authorization', makeAuthHeader(userInvalidCreds))
+                    .set('Authorization', makeAuthHeader(invalidUser))
                     .send(updateRecipe)
                     .expect(401, {error: 'Unauthorized request'})
             })
-            it(`responds 401 'Unauthorized request' when invalid password`, () => {
-                const userInvalidPass = {user_name: testUsers[0], password: 'wrong'}
-                return supertest(app)
-                    .patch(`/api/recipes/${idToUpdate}`)
-                    .set('Authorization', makeAuthHeader(userInvalidPass))
-                    .send(updateRecipe)
-                    .expect(401, {error: 'Unauthorized request'})
-            })
+
         })
     })
     
