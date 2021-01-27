@@ -1,5 +1,3 @@
-TRUNCATE recipenest_users RESTART IDENTITY CASCADE;
-
 INSERT INTO recipenest_users (full_name, user_name, password, nickname, date_created)
 VALUES
     (

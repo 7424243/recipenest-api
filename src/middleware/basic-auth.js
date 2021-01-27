@@ -1,3 +1,5 @@
+//basic authorization was replaced with JWT authorization
+
 const AuthService = require('../auth/auth-service')
 const usersRouter = require('../users/users-router')
 
