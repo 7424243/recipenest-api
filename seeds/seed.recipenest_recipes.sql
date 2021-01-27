@@ -7,7 +7,7 @@ VALUES
         'Paleo', 
         'https://www.erinliveswhole.com/wp-content/uploads/2019/07/lemon-bars-5.jpg', 
         '2018-08-15T23:00:00.000Z', 
-        3
+        1
     ),
     (
         'Spinach Cilantro Meatballs',
@@ -16,7 +16,7 @@ VALUES
         'Maybe cook less than specified time.',
         'https://www.savorylotus.com/wp-content/uploads/2014/03/Spinach-Cilantro-Meatballs.jpeg',
         '2018-08-15T23:00:00.000Z',
-        3
+        2
     ),
     (
         'Chicken Soup',
@@ -25,7 +25,7 @@ VALUES
         'Instant Pot',
         'https://againstallgrain.com/wp-content/uploads/2018/01/IMG_5015.jpg',
         '2018-03-01T00:00:00.000Z',
-        3
+        1
     ),
     (
         'Chocolate Chip Cookies',
@@ -34,7 +34,7 @@ VALUES
         'Paleo',
         'https://againstallgrain.com/wp-content/uploads/2012/08/ChocolateChipCookies.jpg',
         '2019-01-04T00:00:00.000Z',
-        4
+        1
     ),
     (
         'Pork Tenderloin',
@@ -43,5 +43,5 @@ VALUES
         'Instant Pot',
         'https://i2.wp.com/thebetteredblondie.com/wp-content/uploads/2019/06/IMG_0475.jpg?w=1927&ssl=1',
         '2018-03-01T00:00:00.000Z',
-        4
+        2
     );

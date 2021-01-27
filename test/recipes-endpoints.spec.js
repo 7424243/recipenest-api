@@ -4,6 +4,7 @@ const supertest = require('supertest')
 const app = require('../src/app')
 const {makeRecipesArray, makeMaliciousRecipe} = require('./recipes.fixtures')
 const {makeUsersArray} = require('./users.fixtures')
+const {hashUserPassword} = require('./test-helpers')
 
 describe('Recipes Endpoints', function() {
 
@@ -40,9 +41,10 @@ describe('Recipes Endpoints', function() {
 
         //insert the test data
         beforeEach('insert recipes', () => {
+            const protectedUsers = hashUserPassword(testUsers)
             return db
                 .into('recipenest_users')
-                .insert(testUsers)
+                .insert(protectedUsers)
                 .then(() => {
                     return db   
                         .into('recipenest_recipes')
@@ -184,9 +186,10 @@ describe('Recipes Endpoints', function() {
 
             //insert the test data
             beforeEach('insert recipes', () => {
+                const protectedUsers = hashUserPassword(testUsers)
                 return db
                     .into('recipenest_users')
-                    .insert(testUsers)
+                    .insert(protectedUsers)
                     .then(() => {
                         return db   
                             .into('recipenest_recipes')
@@ -211,9 +214,10 @@ describe('Recipes Endpoints', function() {
 
             //insert data
             beforeEach('insert malicious recipe', () => {
+                const protectedUsers = hashUserPassword(testUsers)
                 return db
                     .into('recipenest_users')
-                    .insert(testUsers)
+                    .insert(protectedUsers)
                     .then(() => {
                         return db
                             .into('recipenest_recipes')
@@ -253,9 +257,10 @@ describe('Recipes Endpoints', function() {
 
             //insert the test data
             beforeEach('insert recipes', () => {
+                const protectedUsers = hashUserPassword(testUsers)
                 return db
                     .into('recipenest_users')
-                    .insert(testUsers)
+                    .insert(protectedUsers)
                     .then(() => {
                         return db   
                             .into('recipenest_recipes')
@@ -280,9 +285,10 @@ describe('Recipes Endpoints', function() {
 
             //insert data
             beforeEach('insert malicious recipe', () => {
+                const protectedUsers = hashUserPassword(testUsers)
                 return db
                     .into('recipenest_users')
-                    .insert(testUsers)
+                    .insert(protectedUsers)
                     .then(() => {
                         return db
                             .into('recipenest_recipes')
@@ -315,9 +321,10 @@ describe('Recipes Endpoints', function() {
                 img_url: 'https://ww.img.com"',
                 user_id: 1
             }
+            const protectedUsers = hashUserPassword(testUsers)
             return db
                 .into('recipenest_users')
-                .insert(testUsers)
+                .insert(protectedUsers)
                 .then(() => {
                     return supertest(app)
                         .post('/api/recipes')
@@ -350,9 +357,10 @@ describe('Recipes Endpoints', function() {
         it(`responds with 400 and an error message when the 'recipe_name' is missing`, () => {
             const testUsers = makeUsersArray()
 
+            const protectedUsers = hashUserPassword(testUsers)
             return db
                 .into('recipenest_users')
-                .insert(testUsers)
+                .insert(protectedUsers)
                 .then(() => {
                     return supertest(app)
                         .post('/api/recipes/')
@@ -375,9 +383,10 @@ describe('Recipes Endpoints', function() {
         it(`responds with 400 and an error message when the 'url' is missing`, () => {
             const testUsers = makeUsersArray()
             
+            const protectedUsers = hashUserPassword(testUsers)
             return db
                 .into('recipenest_users')
-                .insert(testUsers)
+                .insert(protectedUsers)
                 .then(() => {
                     return supertest(app)
                         .post('/api/recipes/')
@@ -399,9 +408,10 @@ describe('Recipes Endpoints', function() {
         //validation test for user_id requirement
         it(`responds with 400 and an error message when the 'user_id' is missing`, () => {
             const testUsers = makeUsersArray()
+            const protectedUsers = hashUserPassword(testUsers)
             return db
                 .into('recipenest_users')
-                .insert(testUsers)
+                .insert(protectedUsers)
                 .then(() => {
                     return supertest(app)
                         .post('/api/recipes/')
@@ -424,9 +434,10 @@ describe('Recipes Endpoints', function() {
         it('removes XSS attack content from response', () => {
             const testUsers = makeUsersArray()
             const {maliciousRecipe, expectedRecipe} = makeMaliciousRecipe()
+            const protectedUsers = hashUserPassword(testUsers)
             return db
                 .into('recipenest_users')
-                .insert(testUsers)
+                .insert(protectedUsers)
                 .then(() => {
                     return supertest(app) 
                         .post('/api/recipes/')
@@ -462,9 +473,10 @@ describe('Recipes Endpoints', function() {
             
             //insert testing data
             beforeEach('insert recipes', () => {
+                const protectedUsers = hashUserPassword(testUsers)
                 return db
                     .into('recipenest_users')
-                    .insert(testUsers)
+                    .insert(protectedUsers)
                     .then(() => {
                         return db
                             .into('recipenest_recipes')
@@ -513,9 +525,10 @@ describe('Recipes Endpoints', function() {
 
             //insert testing data
             beforeEach('insert recipes', () => {
+                const protectedUsers = hashUserPassword(testUsers)
                 return db
                     .into('recipenest_users')
-                    .insert(testUsers)
+                    .insert(protectedUsers)
                     .then(() => {
                         return db
                             .into('recipenest_recipes')
