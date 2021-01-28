@@ -155,6 +155,35 @@ describe('Recipes Endpoints', function() {
             })
 
         })
+
+        //test that GET recipes by user id endpoint is protected
+        describe.only(`GET /api/recipes/users/:user_id`, () => {
+
+            const userId = 1
+
+            it(`responds with 401 'Missing bearer token' when no bearer token`, () => {
+                return supertest(app)
+                    .get(`/api/recipes/users/${userId}`)
+                    .expect(401, {error: `Missing bearer token`})
+            })
+
+            it(`responds 401 'Unauthorized request' when no credentials in token`, () => {
+                const userNoCreds = {user_name: '', password: ''}
+                return supertest(app)
+                    .get(`/api/recipes/users/${userId}`)
+                    .set('Authorization', makeAuthHeader(userNoCreds))
+                    .expect(401, {error: `Unauthorized request`})
+            })
+
+            it(`responds 401 'Unauthorized request' when invalid subject in payload`, () => {
+                const invalidUser = {user_name: 'no-exists', id: 1}
+                return supertest(app)
+                    .get(`/api/recipes/users/${userId}`)
+                    .set('Authorization', makeAuthHeader(invalidUser))
+                    .expect(401, {error: 'Unauthorized request'})
+            })
+            
+        })
     })
     
     describe('GET /api/recipes/', () => {
