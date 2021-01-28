@@ -3,6 +3,8 @@ const xss = require('xss')
 const RecipesService = require('./recipes-service')
 const path = require('path')
 const {requireAuth} = require('../middleware/jwt-auth')
+const config = require('../config')
+const jwt =  require('jsonwebtoken')
 
 const recipesRouter = express.Router()
 const jsonParser = express.json()
@@ -95,6 +97,33 @@ recipesRouter
         RecipesService.updateRecipe(knexInstance, req.params.recipe_id, recipeToUpdate)
             .then(numRowsAffected => {
                 res.status(204).end()
+            })
+            .catch(next)
+    })
+
+recipesRouter
+    .route('/users/:user_id')
+    .get(requireAuth, (req, res, next) => {
+        const authToken = req.get('Authorization')
+        const jwtToken = authToken.slice(7, authToken.length)
+        const base64URL = jwtToken.split('.')[1]
+        let base64 = base64URL.replace('-', '+').replace('_', '/')
+        let decodedToken = JSON.parse(Buffer.from(base64, 'base64').toString('binary'))
+        console.log('decodedToken', decodedToken)
+        const user_id = decodedToken.user_id
+        console.log('user_id', user_id)
+        
+        const knexInstance = req.app.get('db')
+
+        RecipesService.getByUserId(knexInstance, user_id)
+            .then(recipes => {
+                if(!recipes) {
+                    return res.status(404).json({
+                        error: {message: `No recipes for this user`}
+                    })
+                }
+                res.json(recipes.map(serializeRecipe))
+                next()
             })
             .catch(next)
     })

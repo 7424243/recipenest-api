@@ -29,6 +29,12 @@ const RecipesService = {
         return knex('recipenest_recipes')
             .where({id})
             .update(newRecipeFields)
+    },
+    getByUserId(knex, user_id) {
+        return knex
+            .select('*')
+            .from('recipenest_recipes')
+            .where({user_id})
     }
 
 }
