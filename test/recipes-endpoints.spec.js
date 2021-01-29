@@ -11,8 +11,11 @@ describe('Recipes Endpoints', function() {
 
     //some test data
     const testUsers = makeUsersArray()
+    console.log('testUsers', testUsers)
     const testRecipes = makeRecipesArray()
+    console.log('testRecipes', testRecipes)
     const protectedUsers = hashUserPassword(testUsers)
+    console.log('protectedUsers', protectedUsers)
 
     //create a connection to the test database
     let db
@@ -588,20 +591,26 @@ describe('Recipes Endpoints', function() {
 
     describe.only(`GET /api/recipes/users/:user_id`, () => {
 
-        const userId = 2
-        const userRecipes = testRecipes[1]
+        const userId = 1
+        const userRecipes = testRecipes.filter(recipe => recipe.user_id === userId)
+        
+        
 
         //for when there are no recipes in the db table for the user
-        // context('Given no recipes', () => {
-        //     it('responds with 200 and an empty list', () => {
-        //         return supertest(app)
-        //             .get(`/api/recipes/users/${userId}`)
-        //             .set('Authorization', makeAuthHeader(testUsers[1]))
-        //             .expect(404, {
-        //                 error: {message: `No recipes for this user`}
-        //             })
-        //     })
-        // })
+        context('Given no recipes for the user', () => {
+            it('responds with 200 and an empty list', () => {
+                return db
+                    .into('recipenest_users')
+                    .insert(protectedUsers)
+                    .then(() => {
+                        return supertest(app)
+                        .get(`/api/recipes/users/${userId}`)
+                        .set('Authorization', makeAuthHeader(testUsers[0]))
+                        .expect(200, [])
+                    })
+                })
+
+        })
 
         //for when there are recipes for the user in the db
         context('Given there are recipes for user in the database', () => {
@@ -619,10 +628,39 @@ describe('Recipes Endpoints', function() {
             })
 
             it(`GET /api/recipes/users/:user_id responds with 200 and all the user's recipes`, () => {
+                console.log('userRecipes', userRecipes)
                 return supertest(app)
                     .get(`/api/recipes/users/${userId}`)
                     .set('Authorization', makeAuthHeader(testUsers[0]))
                     .expect(200, userRecipes)
+            })
+        })
+
+        context(`Given an XSS attack recipe`, () => {
+
+            //test data
+            const {maliciousRecipe, expectedRecipe} = makeMaliciousRecipe()
+
+            //insert data
+            beforeEach('insert malicious recipe', () => {
+                return db
+                    .into('recipenest_users')
+                    .insert(protectedUsers)
+                    .then(() => {
+                        return db
+                            .into('recipenest_recipes')
+                            .insert(maliciousRecipe)
+                    })
+            })
+
+            it(`removes XSS attack content`, () => {
+                return supertest(app)
+                    .get(`/api/recipes/users/${userId}`)
+                    .set('Authorization', makeAuthHeader(testUsers[0]))
+                    .expect(res => {
+                        expect(res.body[0].recipe_name).to.eql(expectedRecipe.recipe_name)
+                        expect(res.body[0].description).to.eql(expectedRecipe.description)
+                    })
             })
         })
     })

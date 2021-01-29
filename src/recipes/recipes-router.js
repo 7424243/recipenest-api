@@ -117,16 +117,11 @@ recipesRouter
 
         RecipesService.getByUserId(knexInstance, user_id)
             .then(recipes => {
-                if(!recipes) {
-                    return res.status(404).json({
-                        error: {message: `No recipes for this user`}
-                    })
-                }
                 res.json(recipes.map(serializeRecipe))
-                next()
             })
             .catch(next)
     })
 
 
 module.exports = recipesRouter
+
