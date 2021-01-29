@@ -105,8 +105,8 @@ recipesRouter
     .route('/users/:user_id')
     .get(requireAuth, (req, res, next) => {
         const authToken = req.get('Authorization')
-        const jwtToken = authToken.slice(7, authToken.length)
-        const base64URL = jwtToken.split('.')[1]
+        const bearerToken = authToken.slice(7, authToken.length)
+        const base64URL = bearerToken.split('.')[1]
         let base64 = base64URL.replace('-', '+').replace('_', '/')
         let decodedToken = JSON.parse(Buffer.from(base64, 'base64').toString('binary'))
         console.log('decodedToken', decodedToken)

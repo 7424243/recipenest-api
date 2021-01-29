@@ -157,7 +157,7 @@ describe('Recipes Endpoints', function() {
         })
 
         //test that GET recipes by user id endpoint is protected
-        describe.only(`GET /api/recipes/users/:user_id`, () => {
+        describe(`GET /api/recipes/users/:user_id`, () => {
 
             const userId = 1
 
@@ -182,7 +182,7 @@ describe('Recipes Endpoints', function() {
                     .set('Authorization', makeAuthHeader(invalidUser))
                     .expect(401, {error: 'Unauthorized request'})
             })
-            
+
         })
     })
     
@@ -582,6 +582,47 @@ describe('Recipes Endpoints', function() {
                             .get(`/api/recipes/${idToUpdate}`)
                             .expect(expectedRecipe)
                     })
+            })
+        })
+    })
+
+    describe.only(`GET /api/recipes/users/:user_id`, () => {
+
+        const userId = 2
+        const userRecipes = testRecipes[1]
+
+        //for when there are no recipes in the db table for the user
+        context('Given no recipes', () => {
+            it('responds with 200 and an empty list', () => {
+                return supertest(app)
+                    .get(`/api/recipes/users/${userId}`)
+                    .set('Authorization', makeAuthHeader(testUsers[1]))
+                    .expect(404, {
+                        error: {message: `No recipes for this user`}
+                    })
+            })
+        })
+
+        //for when there are recipes for the user in the db
+        context('Given there are recipes for user in the database', () => {
+
+            //insert the test data
+            beforeEach('insert recipes', () => {
+                return db
+                    .into('recipenest_users')
+                    .insert(protectedUsers)
+                    .then(() => {
+                        return db
+                            .into('recipenest_recipes')
+                            .insert(testRecipes)
+                    })
+            })
+
+            it(`GET /api/recipes/users/:user_id responds with 200 and all the user's recipes`, () => {
+                return supertest(app)
+                    .get(`/api/recipes/users/${userId}`)
+                    .set('Authorization', makeAuthHeader(testUsers[0]))
+                    .expect(200, userRecipes)
             })
         })
     })
