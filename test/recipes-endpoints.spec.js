@@ -592,16 +592,16 @@ describe('Recipes Endpoints', function() {
         const userRecipes = testRecipes[1]
 
         //for when there are no recipes in the db table for the user
-        context('Given no recipes', () => {
-            it('responds with 200 and an empty list', () => {
-                return supertest(app)
-                    .get(`/api/recipes/users/${userId}`)
-                    .set('Authorization', makeAuthHeader(testUsers[1]))
-                    .expect(404, {
-                        error: {message: `No recipes for this user`}
-                    })
-            })
-        })
+        // context('Given no recipes', () => {
+        //     it('responds with 200 and an empty list', () => {
+        //         return supertest(app)
+        //             .get(`/api/recipes/users/${userId}`)
+        //             .set('Authorization', makeAuthHeader(testUsers[1]))
+        //             .expect(404, {
+        //                 error: {message: `No recipes for this user`}
+        //             })
+        //     })
+        // })
 
         //for when there are recipes for the user in the db
         context('Given there are recipes for user in the database', () => {
