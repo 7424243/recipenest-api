@@ -69,7 +69,7 @@ describe(`Auth Endpoints`, () => {
             return supertest(app)
                 .post('/api/auth/login')
                 .send(userInvalidUsername)
-                .expect(400, {error: `Incorrect user_name or password`})
+                .expect(400, {error: `Incorrect username or password`})
         })
 
         //test for invalid password
@@ -80,7 +80,7 @@ describe(`Auth Endpoints`, () => {
             return supertest(app)
                 .post('/api/auth/login')
                 .send(userInvalidPassword)
-                .expect(400, {error: `Incorrect user_name or password`})
+                .expect(400, {error: `Incorrect username or password`})
         })
 
         //test for happy path
