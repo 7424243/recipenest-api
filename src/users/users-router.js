@@ -17,14 +17,7 @@ const serializeUser = user => ({
 
 usersRouter
     .route('/')
-    .get((req, res, next) => {
-        const knexInstance = req.app.get('db')
-        UsersService.getAllUsers(knexInstance)
-            .then(users => {
-                res.json(users.map(serializeUser))
-            })
-            .catch(next)
-    })
+    //POST new user
     .post(jsonParser, (req, res, next) => {
         const {full_name, user_name, password, nickname} = req.body
         const newUser = {full_name, user_name, password}
@@ -93,6 +86,7 @@ usersRouter
             })
             .catch(next)
     })
+    //GET user by user id
     .get((req, res, next) => {
         res.json(serializeUser(res.user))
     })

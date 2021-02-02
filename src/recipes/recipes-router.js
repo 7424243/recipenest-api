@@ -22,6 +22,7 @@ const serializeRecipe = recipe => ({
 
 recipesRouter 
     .route('/')
+    //GET all recipes
     .get((req, res, next) => {
         const knexInstance = req.app.get('db')
         RecipesService.getAllRecipes(knexInstance)
@@ -30,17 +31,18 @@ recipesRouter
             })
             .catch(next)
     })
+    //POST new recipe - protected endpoint
     .post(requireAuth, jsonParser, (req, res, next) => {
         const {recipe_name, url, description, notes, img_url, user_id} = req.body
         const newRecipe = {recipe_name, url, user_id}
-        
+
         //required fields
         for (const [key, value] of Object.entries(newRecipe))
             if(value == null)
                 return res.status(400).json({
                     error: {message: `Missing '${key}' in request body`}
                 })
-        
+
         //optional fields
         newRecipe.description = description
         newRecipe.notes = notes
@@ -73,9 +75,11 @@ recipesRouter
             })
             .catch(next)
     })
+    //GET recipe by id
     .get((req, res, next) => {
         res.json(serializeRecipe(res.recipe))
     })
+    //DELETE recipe by id - protected endpoint
     .delete(requireAuth, (req, res, next) => {
         const knexInstance = req.app.get('db')
         RecipesService.deleteRecipe(knexInstance, req.params.recipe_id)
@@ -84,6 +88,7 @@ recipesRouter
             })
             .catch(next)
     })
+    //PATCH recipe by id - protected endpoint
     .patch(requireAuth, jsonParser, (req, res, next) => {
         const {recipe_name, url, description, notes, img_url} = req.body
         const recipeToUpdate = {recipe_name, url, description, notes, img_url}
@@ -103,6 +108,7 @@ recipesRouter
 
 recipesRouter
     .route('/users/:user_id')
+    //GET all recipes by user_id - protected endpoint
     .get(requireAuth, (req, res, next) => {
         const authToken = req.get('Authorization')
         const bearerToken = authToken.slice(7, authToken.length)
