@@ -14,7 +14,8 @@ This RESTful API was originally built for the [RecipeNest](https://github.com/74
 * POST /recipes/  >>  add a new recipe entry (protected endpoint)
 * GET /recipes/:recipe_id  >>  get a recipe entry by id  
 Example Response:  
-    ```{  
+    ```
+    {  
         "id": 3,  
         "recipe_name": "Recipe Name",  
         "url": "https://recipeurl.com,  
@@ -22,8 +23,9 @@ Example Response:
         "notes": "notes for recipe",  
         "img_url": "https://recipeimgurl.com",  
         "date_created": "2018-03-01T00:00:00.000Z",  
-        "user_id": 1  
-    ```}  
+        "user_id": 1 
+    } 
+    ```  
 * DELETE /recipes/:recipe_id  >>  delete a recipe entry by id (protected endpoint)
 * PATCH /recipes/:recipe_id  >>  patch/edit a recipe entry by id (protected endpoint)
 * GET /recipes/users/:user_id  >>  get all recipes for a user (protected endpoint)
@@ -34,14 +36,16 @@ Example Response:
 * POST /users/  >>  create a new user
 * GET /users/:user_id  >>  get a user by id  
 Example Response:  
-    ```{  
+    ```
+    {  
         "id": 1,  
         "full_name": "Example Name",  
         "user_name": "exampleuser",  
         "password": "$2a$12$vpzXZQp9U1pl1LNv6LVBoONKZWscyMRxRHPZRKJsVG2RhiY..uV5q",  
         "nickname": "user 1",  
         "date_created": "2018-03-01T00:00:00.000Z"  
-    ```}  
+    }
+    ```
 
 ### Login Endpoint 
 * Required Parameters: user_name (string), password (string)
