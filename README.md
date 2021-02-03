@@ -1,6 +1,6 @@
 # RecipeNest API!
 
-This RESTful API was originally built for the [RecipeNest](https://github.com/7424243/recipenest-client) app.
+This API was originally built for the [RecipeNest](https://github.com/7424243/recipenest-client) app.
 
 ## Documentation
 
@@ -10,9 +10,9 @@ This RESTful API was originally built for the [RecipeNest](https://github.com/74
 ### Recipes Endpoints
 * Required Parameters: recipe_name (string), url (string), user_id (integer), date_created (timestamptz)
 * Optional Parameters: description (string), notes (string), img_url (string)
-* GET /recipes/  >>  gets all recipe entries
-* POST /recipes/  >>  add a new recipe entry (protected endpoint)
-* GET /recipes/:recipe_id  >>  get a recipe entry by id  
+* ```GET /recipes/```  >>  gets all recipe entries
+* ```POST /recipes/```  >>  add a new recipe entry (protected endpoint)
+* ```GET /recipes/:recipe_id```  >>  get a recipe entry by id  
 Example Response:  
     ```
     {  
@@ -26,15 +26,15 @@ Example Response:
         "user_id": 1 
     } 
     ```  
-* DELETE /recipes/:recipe_id  >>  delete a recipe entry by id (protected endpoint)
-* PATCH /recipes/:recipe_id  >>  patch/edit a recipe entry by id (protected endpoint)
-* GET /recipes/users/:user_id  >>  get all recipes for a user (protected endpoint)
+* ```DELETE /recipes/:recipe_id```  >>  delete a recipe entry by id (protected endpoint)
+* ```PATCH /recipes/:recipe_id```  >>  patch/edit a recipe entry by id (protected endpoint)
+* ```GET /recipes/users/:user_id```  >>  get all recipes for a user (protected endpoint)
 
 ### Users Endpoints
 * Required Parameters: user_name (string), password (string), full_name (string), date_created (timestamptz)
 * Optional Parameters: nickname (string)
-* POST /users/  >>  create a new user
-* GET /users/:user_id  >>  get a user by id  
+* ```POST /users/```  >>  create a new user
+* ```GET /users/:user_id```  >>  get a user by id  
 Example Response:  
     ```
     {  
@@ -49,7 +49,7 @@ Example Response:
 
 ### Login Endpoint 
 * Required Parameters: user_name (string), password (string)
-* POST /login  >>  to login using JWT authentication
+* ```POST /login```  >>  to login using JWT authentication
 
 ## Summary
 
