@@ -86,7 +86,6 @@ describe(`Auth Endpoints`, () => {
         //test for happy path
         it(`responds 200 and JWT auth token using secret when valid credentials`, () => {
             
-            
             const userValidCreds = {
                 user_name: testUser.user_name,
                 password: testUser.password,

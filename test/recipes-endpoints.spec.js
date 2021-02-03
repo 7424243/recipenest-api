@@ -591,8 +591,6 @@ describe('Recipes Endpoints', function() {
         const userId = 1
         const userRecipes = testRecipes.filter(recipe => recipe.user_id === userId)
         
-        
-
         //for when there are no recipes in the db table for the user
         context('Given no recipes for the user', () => {
             it('responds with 200 and an empty list', () => {

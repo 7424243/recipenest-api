@@ -65,7 +65,6 @@ usersRouter
                                     .json(serializeUser(user))
                             })
                     })
-
             })
             .catch(next)
     })
