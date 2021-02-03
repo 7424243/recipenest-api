@@ -1,26 +1,60 @@
-# Express Boilerplate!
+# RecipeNest API!
 
-This is a boilerplate project used for starting new projects!
+This RESTful API was originally built for the [RecipeNest](https://github.com/7424243/recipenest-client) app.
 
-## Set up
+## Documentation
 
-Complete the following steps to start a new project (NEW-PROJECT-NAME):
+* Base URL: 'https://infinite-headland-60692.herokuapp.com/api'
+* Response Format: JSON
 
-1. Clone this repository to your local machine `git clone BOILERPLATE-URL NEW-PROJECTS-NAME`
-2. `cd` into the cloned repository
-3. Make a fresh start of the git history for this project with `rm -rf .git && git init`
-4. Install the node dependencies `npm install`
-5. Move the example Environment file to `.env` that will be ignored by git and read by the express server `mv example.env .env`
-6. Edit the contents of the `package.json` to use NEW-PROJECT-NAME instead of `"name": "express-boilerplate",`
+### Recipes Endpoints
+* Required Parameters: recipe_name (string), url (string), user_id (integer), date_created (timestamptz)
+* Optional Parameters: description (string), notes (string), img_url (string)
+* GET /recipes/ >> gets all recipe entries
+* POST /recipes/ >> add a new recipe entry (protected endpoint)
+* GET /recipes/:recipe_id >> get a recipe entryby id
+Example Response:
+    {
+        "id": 3,
+        "recipe_name": "Recipe Name",
+        "url": "https://recipeurl.com,
+        "description": "description of recipe",
+        "notes": "notes for recipe",
+        "img_url": "https://recipeimgurl.com",
+        "date_created": "2018-03-01T00:00:00.000Z",
+        "user_id": 1
+    }
+* DELETE /recipes/:recipe_id >> delete a recipe entry by id (protected endpoint)
+* PATCH /recipes/:recipe_id >> patch/edit a recipe entry by id (protected endpoint)
+* GET /recipes/users/:user_id >> get all recipes for a user (protected endpoint)
 
-## Scripts
+### Users Endpoints
+* Required Parameters: user_name (string), password (string), full_name (string), date_created (timestamptz)
+* Optional Parameters: nickname (string)
+* POST /users/ >> create a new user
+* GET /users/:user_id >> get a user by id
+Example Response:
+    {
+        "id": 1,
+        "full_name": "Example Name",
+        "user_name": "exampleuser",
+        "password": "$2a$12$vpzXZQp9U1pl1LNv6LVBoONKZWscyMRxRHPZRKJsVG2RhiY..uV5q",
+        "nickname": "user 1",
+        "date_created": "2018-03-01T00:00:00.000Z"
+    }
 
-Start the application `npm start`
+### Login Endpoint 
+* Required Parameters: user_name (string), password (string)
+* POST /login >> to login using JWT authentication
 
-Start nodemon for the application `npm run dev`
+## Summary
 
-Run the tests `npm test`
+This server was created in order to help keep track of virtual recipe notes. The database is made up of two tables, one for recipes and one for users. The API allows GET, POST, DELETE, and PATCH requests based on the endpoint. Protected endpoints utilize JWT Authentication.
 
-## Deploying
+## Built With
 
-When your new project is ready for deployment, add a new Heroku application with `heroku create`. This will make a new git remote called "heroku" and you can then `npm run deploy` which will push to this remote's main branch.
+* Node
+* Express
+* PostgreSQL
+* JavaScript
+
