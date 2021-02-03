@@ -115,9 +115,7 @@ recipesRouter
         const base64URL = bearerToken.split('.')[1]
         let base64 = base64URL.replace('-', '+').replace('_', '/')
         let decodedToken = JSON.parse(Buffer.from(base64, 'base64').toString('binary'))
-        console.log('decodedToken', decodedToken)
         const user_id = decodedToken.user_id
-        console.log('user_id', user_id)
         
         const knexInstance = req.app.get('db')
 

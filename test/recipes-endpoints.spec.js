@@ -11,11 +11,8 @@ describe('Recipes Endpoints', function() {
 
     //some test data
     const testUsers = makeUsersArray()
-    console.log('testUsers', testUsers)
     const testRecipes = makeRecipesArray()
-    console.log('testRecipes', testRecipes)
     const protectedUsers = hashUserPassword(testUsers)
-    console.log('protectedUsers', protectedUsers)
 
     //create a connection to the test database
     let db
@@ -628,7 +625,6 @@ describe('Recipes Endpoints', function() {
             })
 
             it(`GET /api/recipes/users/:user_id responds with 200 and all the user's recipes`, () => {
-                console.log('userRecipes', userRecipes)
                 return supertest(app)
                     .get(`/api/recipes/users/${userId}`)
                     .set('Authorization', makeAuthHeader(testUsers[0]))
