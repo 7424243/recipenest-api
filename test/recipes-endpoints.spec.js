@@ -586,7 +586,7 @@ describe('Recipes Endpoints', function() {
         })
     })
 
-    describe.only(`GET /api/recipes/users/:user_id`, () => {
+    describe(`GET /api/recipes/users/:user_id`, () => {
 
         const userId = 1
         const userRecipes = testRecipes.filter(recipe => recipe.user_id === userId)
