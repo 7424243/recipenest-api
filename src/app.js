@@ -16,7 +16,7 @@ app.use(morgan(morganOption))
 app.use(helmet())
 
 //allow CORS for dynamic origins
-const whitelist = ['http://localhost:3000', 'https://recipenest.vercel.app/']
+const whitelist = ['http://localhost:3000', 'https://recipenest.vercel.app']
 const corsOptions = {
     origin: function(origin, callback) {
         let originWhitelisted = whitelist.indexOf(origin) !== -1
