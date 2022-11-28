@@ -4,8 +4,29 @@ This API was originally built for the [RecipeNest](https://github.com/7424243/re
 
 ## Documentation
 
-* Base URL: 'https://infinite-headland-60692.herokuapp.com/api'
+* Base URL: 'http://localhost:8000/api'
 * Response Format: JSON
+* Database: recipenest
+* Owner: samsheets
+
+### Server and Database Connection
+After the Heroku plan updates, the server and database need to be running *locally* in order for the fullstack application to work as expected.
+
+1. Start Server:
+```
+npm run start
+```
+
+2. Start Database in Terminal:
+```
+/usr/local/opt/postgresql@13/bin/postgres -D /usr/local/var/postgresql@13
+```
+
+OR,
+2. Start Database in Terminal in the Background:
+```
+brew services restart postgresql@13
+```
 
 ### Recipes Endpoints
 * Required Parameters: recipe_name (string), url (string), user_id (integer), date_created (timestamptz)
@@ -62,3 +83,8 @@ This server was created in order to help keep track of virtual recipe notes. The
 * PostgreSQL
 * JavaScript
 
+## Heroku Deprecated Info
+Heroku plan changes went into effect 11/28/22. As of that date, the server and database are no longer actively deployed there.
+
+* The database dump can be found in the `herokuDbDump` folder.
+* Old server api: https://infinite-headland-60692.herokuapp.com/api
